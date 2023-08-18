@@ -1,102 +1,273 @@
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:intl/intl.dart';
 import 'package:mondaytest/Models/message_model.dart';
 import 'package:mondaytest/Models/user_model.dart';
 import 'package:mondaytest/helper/Fcm.dart';
+import 'package:responsive_sizer/responsive_sizer.dart';
 
+import '../../controller/RegistrationController.dart';
 import '../../helper/constants.dart';
 
 class ScreenChat extends StatelessWidget {
   UserModel receiver;
-  var inputController = TextEditingController();
+  RegistrationController chatController = Get.put(RegistrationController());
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(receiver.id),
+        backgroundColor: Colors.white,
+        title: Text(receiver.id, style: TextStyle(
+          color: Colors.black
+        ),),
+        leading: IconButton(onPressed: () { Get.back(); }, icon: Icon(Icons.arrow_back, color: Colors.black),
+
+        ),
       ),
-      body: Column(
-        children: [
-          Expanded(
-              child: StreamBuilder<DatabaseEvent>(
-                  stream: chatsRef
-                      .child(getRoomId(receiver.id, currentUser!.uid))
-                      .onValue,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    }
+      body: WillPopScope(
+        child: Column(
+          children: [
+            Expanded(
+                child: StreamBuilder<DatabaseEvent>(
+                    stream: chatsRef
+                        .child(getRoomId(receiver.id, currentUser!.uid))
+                        .onValue,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }
 
-                    var data = snapshot.data;
+                      var data = snapshot.data;
 
-                    if (data == null || data.snapshot.value == null) {
-                      return Center(
-                        child: Text("No messages yet"),
-                      );
-                    }
+                      if (data == null || data.snapshot.value == null) {
+                        return Center(
+                          child: Text("No messages yet"),
+                        );
+                      }
 
-                    List<MessageModel> messages = data.snapshot.children
-                        .map((e) => MessageModel.fromMap(
-                            Map<String, dynamic>.from(e.value as Map)))
-                        .toList();
+                      List<MessageModel> messages = data.snapshot.children
+                          .map((e) =>
+                          MessageModel.fromMap(
+                              Map<String, dynamic>.from(e.value as Map)))
+                          .toList();
 
-                    return messages.isNotEmpty
-                        ? ListView.builder(
-                            itemCount: messages.length,
-                            itemBuilder: (BuildContext context, int index) {
-                              var message = messages[index];
+                      return messages.isNotEmpty
+                          ? ListView.builder(
+                        itemCount: messages.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          var message = messages[index];
 
-                              return ListTile(
+                          return Align(
+                            alignment:
+                            message.sender_id == currentUser!.uid
+                                ? Alignment.centerRight
+                                : Alignment.centerLeft,
+                            child: Container(
+                              padding: EdgeInsets.only(bottom: 5, top: 10, left: 10, right: 5),
+                              margin: EdgeInsets.only(bottom: 10),
+                              width: Device.width * .67,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.only(
+                                  topRight: message.sender_id ==
+                                      currentUser!.uid
+                                      ? Radius.circular(0)
+                                      : Radius.circular(30),
+                                  topLeft: message.sender_id ==
+                                      currentUser!.uid
+                                      ? Radius.circular(30)
+                                      : Radius.circular(0),
+                                  bottomLeft: message.sender_id ==
+                                      currentUser!.uid
+                                      ? Radius.circular(0)
+                                      : Radius.circular(30),
+                                  bottomRight: message.sender_id ==
+                                      currentUser!.uid
+                                      ? Radius.circular(30)
+                                      : Radius.circular(0),
+                                ),
+                                color: message.sender_id ==
+                                    currentUser!.uid
+                                    ? Colors.greenAccent.withOpacity(.7)
+                                    : Colors.grey.withOpacity(.3),
+                              ),
+                              child: ListTile(
                                 title: Text(message.text),
-                                subtitle: Text(message.sender_id == currentUser!.uid ? "You" : "Other"),
-                                trailing: Text(DateFormat("hh:mm").format(
-                                    DateTime.fromMillisecondsSinceEpoch(
-                                        message.timestamp))),
-                              );
-                            },
-                          )
-                        : Center(
-                            child: Text("No messages"),
+                                subtitle: Text(
+                                    message.sender_id == currentUser!.uid
+                                        ? "You"
+                                        : "Other"),
+                                trailing: Column(
+                                  mainAxisAlignment:
+                                  MainAxisAlignment.end,
+                                  crossAxisAlignment:
+                                  CrossAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      DateFormat("hh:mm").format(DateTime
+                                          .fromMillisecondsSinceEpoch(
+                                          message.timestamp)),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ).paddingOnly(left: 15, right: 15,),
                           );
-                  })),
-          Row(
-            children: [
-              Expanded(
-                child: TextFormField(
-                  decoration:
-                      InputDecoration(hintText: "Write message here..."),
-                  controller: inputController,
+                        },
+                      )
+                          : Center(
+                        child: Text("No messages"),
+                      );
+                    })),
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    margin: EdgeInsets.only(right: 10),
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(width: 0.1, color: Colors.black)),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            chatController.isEmojiVisible.value =
+                            !chatController.isEmojiVisible.value;
+                            chatController.focusNode.unfocus();
+                            chatController.focusNode.canRequestFocus= true;
+                          },
+                          icon: Icon(Icons.emoji_emotions_rounded),
+                          highlightColor: Colors.transparent,
+                          // Set highlight color to transparent
+                          splashColor: Colors
+                              .transparent, // Set splash color to transparent
+                        ),
+                        Expanded(
+                          child: TextFormField(
+
+                            focusNode: chatController.focusNode,
+
+                            decoration: InputDecoration(
+                              hintText: "Write message here...",
+                              border: InputBorder.none,
+                            ),
+                            maxLines: null,
+                            controller: chatController.textEditingController,
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () {},
+                          icon: Icon(Icons.camera_alt),
+                          highlightColor: Colors.transparent,
+                          // Set highlight color to transparent
+                          splashColor: Colors
+                              .transparent, // Set splash color to transparent
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-              FloatingActionButton(
-                onPressed: () async {
-                  FCM.sendMessageSingle(
-                      "New message", inputController.text, receiver.token, {});
+                FloatingActionButton(
+                  highlightElevation: 0,
+                  // Set highlight elevation to 0
+                  splashColor: Colors.transparent,
+                  mini: true,
+                  onPressed: () async {
+                    if (chatController.textEditingController.text.isNotEmpty) {
+                      FCM.sendMessageSingle(
+                        "New message",
+                        chatController.textEditingController.text,
+                        receiver.token,
+                        {},
+                      );
 
-                  var timestamp = DateTime.now().millisecondsSinceEpoch;
+                      var timestamp = DateTime
+                          .now()
+                          .millisecondsSinceEpoch;
 
-                  var message = MessageModel(
-                      id: timestamp.toString(),
-                      text: inputController.text,
-                      sender_id: currentUser!.uid,
-                      timestamp: timestamp);
+                      var message = MessageModel(
+                        id: timestamp.toString(),
+                        text: chatController.textEditingController.text,
+                        sender_id: currentUser!.uid,
+                        timestamp: timestamp,
+                      );
 
-                  chatsRef
-                      .child(getRoomId(receiver.id, currentUser!.uid))
-                      .child(timestamp.toString())
-                      .set(message.toMap());
+                      chatsRef
+                          .child(getRoomId(receiver.id, currentUser!.uid))
+                          .child(timestamp.toString())
+                          .set(message.toMap());
 
-                  inputController.clear();
-                },
-                child: Icon(Icons.send),
-              )
-            ],
-          )
-        ],
+                      chatController.textEditingController.clear();
+                    }
+                  },
+                  child: Icon(
+                    Icons.send,
+                    size: 20,
+                  ),
+                ),
+              ],
+            ).paddingOnly(left: 10, right: 10),
+
+            Obx(() {
+              return Offstage(
+                offstage: !chatController.isEmojiVisible.value,
+                child: SizedBox(
+                  height: 35.h,
+                  child: EmojiPicker(
+                    onEmojiSelected: (Category? category, Emoji emoji) {
+                      chatController.textEditingController.text = chatController.textEditingController.text+emoji.emoji;
+
+                    },
+                    onBackspacePressed: () {},
+                    config: Config(
+                      columns: 8,
+                      verticalSpacing: 0,
+                      horizontalSpacing: 0,
+                      gridPadding: EdgeInsets.zero,
+                      initCategory: Category.RECENT,
+                      bgColor: Colors.white,
+                      indicatorColor: Colors.blue,
+                      iconColor: Colors.grey,
+                      iconColorSelected: Colors.blue,
+                      backspaceColor: Colors.blue,
+                      skinToneDialogBgColor: Colors.white,
+                      skinToneIndicatorColor: Colors.grey,
+                      enableSkinTones: true,
+                      recentTabBehavior: RecentTabBehavior.RECENT,
+                      recentsLimit: 28,
+                      noRecents: const Text(
+                        'No Recents',
+                        style: TextStyle(fontSize: 20, color: Colors.black26),
+                        textAlign: TextAlign.center,
+                      ),
+                      // Needs to be const Widget
+                      loadingIndicator: const SizedBox.shrink(),
+                      // Needs to be const Widget
+                      tabIndicatorAnimDuration: kTabScrollDuration,
+                      categoryIcons: const CategoryIcons(),
+                      buttonMode: ButtonMode.MATERIAL,
+                    ),
+                  ),
+                ),
+              );
+            })
+          ],
+        ),
+        onWillPop: (){
+          if (chatController.isEmojiVisible.value) {
+            chatController.isEmojiVisible.value = false;
+          }else{
+            Navigator.canPop(context);
+          }
+          return Future.value(false);
+        },
       ),
     );
   }

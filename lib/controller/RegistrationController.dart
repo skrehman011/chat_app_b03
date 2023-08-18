@@ -17,6 +17,7 @@ class RegistrationController extends GetxController{
   TextEditingController ageController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
 
+
   void SignUp() async{
     String name = nameController.text.trim();
     String email = emailcontroller.text.trim();
@@ -87,6 +88,26 @@ class RegistrationController extends GetxController{
         Get.snackbar('error', error.toString());
       });
     }
+  }
+
+  var isEmojiVisible = false.obs;
+  FocusNode focusNode = FocusNode();
+  var textEditingController = TextEditingController();
+
+  @override
+  void onInit() {
+    super.onInit();
+    focusNode.addListener(() {
+      if (focusNode.hasFocus) {
+        isEmojiVisible.value = false;
+      }
+    });
+  }
+
+  @override
+  void onClose() {
+    super.onClose();
+    textEditingController.dispose();
   }
 }
 
