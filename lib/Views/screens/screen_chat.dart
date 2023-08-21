@@ -9,24 +9,28 @@ import 'package:mondaytest/Models/user_model.dart';
 import 'package:mondaytest/helper/Fcm.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 
+import '../../Models/Student.dart';
 import '../../controller/RegistrationController.dart';
 import '../../helper/constants.dart';
 
 class ScreenChat extends StatelessWidget {
-  UserModel receiver;
+  Student receiver;
   RegistrationController chatController = Get.put(RegistrationController());
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title: Text(receiver.id, style: TextStyle(
-          color: Colors.black
-        ),),
-        leading: IconButton(onPressed: () { Get.back(); }, icon: Icon(Icons.arrow_back, color: Colors.black),
-
+        title: Text(
+          receiver.name,
+          style: TextStyle(color: Colors.black),
+        ),
+        leading: IconButton(
+          onPressed: () {
+            Get.back();
+          },
+          icon: Icon(Icons.arrow_back, color: Colors.black),
         ),
       ),
       body: Padding(
@@ -36,9 +40,7 @@ class ScreenChat extends StatelessWidget {
             children: [
               Expanded(
                   child: StreamBuilder<DatabaseEvent>(
-                      stream: chatsRef
-                          .child(getRoomId(receiver.id, currentUser!.uid))
-                          .onValue,
+                      stream: chatsRef.child(getRoomId(receiver.id, currentUser!.uid)).child("messages").onValue,
                       builder: (context, snapshot) {
                         if (snapshot.connectionState == ConnectionState.waiting) {
                           return Center(
@@ -54,78 +56,54 @@ class ScreenChat extends StatelessWidget {
                           );
                         }
 
-                        List<MessageModel> messages = data.snapshot.children
-                            .map((e) =>
-                            MessageModel.fromMap(
-                                Map<String, dynamic>.from(e.value as Map)))
-                            .toList();
+                        List<MessageModel> messages =
+                            data.snapshot.children.map((e) => MessageModel.fromMap(Map<String, dynamic>.from(e.value as Map))).toList();
 
                         return messages.isNotEmpty
                             ? ListView.builder(
-                          itemCount: messages.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            var message = messages[index];
+                                itemCount: messages.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  var message = messages[index];
 
-                            return Align(
-                              alignment:
-                              message.sender_id == currentUser!.uid
-                                  ? Alignment.centerRight
-                                  : Alignment.centerLeft,
-                              child: Container(
-                                padding: EdgeInsets.only(bottom: 5, top: 5, left: 10, right: 5),
-                                margin: EdgeInsets.only(bottom: 10),
-                                width: Device.width * .67,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.only(
-                                    topRight: message.sender_id ==
-                                        currentUser!.uid
-                                        ? Radius.circular(0)
-                                        : Radius.circular(20),
-                                    topLeft: message.sender_id ==
-                                        currentUser!.uid
-                                        ? Radius.circular(20)
-                                        : Radius.circular(0),
-                                    bottomLeft: message.sender_id ==
-                                        currentUser!.uid
-                                        ? Radius.circular(0)
-                                        : Radius.circular(20),
-                                    bottomRight: message.sender_id ==
-                                        currentUser!.uid
-                                        ? Radius.circular(20)
-                                        : Radius.circular(0),
-                                  ),
-                                  color: message.sender_id ==
-                                      currentUser!.uid
-                                      ? Colors.greenAccent.withOpacity(.7)
-                                      : Colors.grey.withOpacity(.3),
-                                ),
-                                child: ListTile(
-                                  title: Text(message.text),
-                                  subtitle: Text(
-                                      message.sender_id == currentUser!.uid
-                                          ? "You"
-                                          : "Other"),
-                                  trailing: Column(
-                                    mainAxisAlignment:
-                                    MainAxisAlignment.end,
-                                    crossAxisAlignment:
-                                    CrossAxisAlignment.end,
-                                    children: [
-                                      Text(
-                                        DateFormat("hh:mm").format(DateTime
-                                            .fromMillisecondsSinceEpoch(
-                                            message.timestamp)),
+                                  return Align(
+                                    alignment: message.sender_id == currentUser!.uid ? Alignment.centerRight : Alignment.centerLeft,
+                                    child: Container(
+                                      padding: EdgeInsets.only(bottom: 5, top: 5, left: 10, right: 5),
+                                      margin: EdgeInsets.only(bottom: 10),
+                                      width: Device.width * .67,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.only(
+                                          topRight: message.sender_id == currentUser!.uid ? Radius.circular(0) : Radius.circular(20),
+                                          topLeft: message.sender_id == currentUser!.uid ? Radius.circular(20) : Radius.circular(0),
+                                          bottomLeft: message.sender_id == currentUser!.uid ? Radius.circular(0) : Radius.circular(20),
+                                          bottomRight: message.sender_id == currentUser!.uid ? Radius.circular(20) : Radius.circular(0),
+                                        ),
+                                        color:
+                                            message.sender_id == currentUser!.uid ? Colors.greenAccent.withOpacity(.7) : Colors.grey.withOpacity(.3),
                                       ),
-                                    ],
-                                  ),
-                                ),
-                              ).paddingOnly(left: 15, right: 15,),
-                            );
-                          },
-                        )
+                                      child: ListTile(
+                                        title: Text(message.text),
+                                        subtitle: Text(message.sender_id == currentUser!.uid ? "You" : receiver.name),
+                                        trailing: Column(
+                                          mainAxisAlignment: MainAxisAlignment.end,
+                                          crossAxisAlignment: CrossAxisAlignment.end,
+                                          children: [
+                                            Text(
+                                              DateFormat("hh:mm").format(DateTime.fromMillisecondsSinceEpoch(message.timestamp)),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ).paddingOnly(
+                                      left: 15,
+                                      right: 15,
+                                    ),
+                                  );
+                                },
+                              )
                             : Center(
-                          child: Text("No messages"),
-                        );
+                                child: Text("No messages"),
+                              );
                       })),
               Row(
                 children: [
@@ -133,29 +111,23 @@ class ScreenChat extends StatelessWidget {
                     child: Container(
                       margin: EdgeInsets.only(right: 10),
                       decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(width: 0.1, color: Colors.black)),
+                          color: Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(width: 0.1, color: Colors.black)),
                       child: Row(
                         children: [
                           IconButton(
                             onPressed: () {
-                              chatController.isEmojiVisible.value =
-                              !chatController.isEmojiVisible.value;
+                              chatController.isEmojiVisible.value = !chatController.isEmojiVisible.value;
                               chatController.focusNode.unfocus();
-                              chatController.focusNode.canRequestFocus= true;
+                              chatController.focusNode.canRequestFocus = true;
                             },
                             icon: Icon(Icons.emoji_emotions_rounded),
                             highlightColor: Colors.transparent,
                             // Set highlight color to transparent
-                            splashColor: Colors
-                                .transparent, // Set splash color to transparent
+                            splashColor: Colors.transparent, // Set splash color to transparent
                           ),
                           Expanded(
                             child: TextFormField(
-
                               focusNode: chatController.focusNode,
-
                               decoration: InputDecoration(
                                 hintText: "Write message here...",
                                 border: InputBorder.none,
@@ -169,8 +141,7 @@ class ScreenChat extends StatelessWidget {
                             icon: Icon(Icons.camera_alt),
                             highlightColor: Colors.transparent,
                             // Set highlight color to transparent
-                            splashColor: Colors
-                                .transparent, // Set splash color to transparent
+                            splashColor: Colors.transparent, // Set splash color to transparent
                           ),
                         ],
                       ),
@@ -186,13 +157,11 @@ class ScreenChat extends StatelessWidget {
                         FCM.sendMessageSingle(
                           "New message",
                           chatController.textEditingController.text,
-                          receiver.token,
+                          receiver.token ?? "",
                           {},
                         );
 
-                        var timestamp = DateTime
-                            .now()
-                            .millisecondsSinceEpoch;
+                        var timestamp = DateTime.now().millisecondsSinceEpoch;
 
                         var message = MessageModel(
                           id: timestamp.toString(),
@@ -201,11 +170,14 @@ class ScreenChat extends StatelessWidget {
                           timestamp: timestamp,
                         );
 
-                        chatsRef
-                            .child(getRoomId(receiver.id, currentUser!.uid))
-                            .child(timestamp.toString())
-                            .set(message.toMap());
+                        var roomPath = chatsRef.child(getRoomId(receiver.id, currentUser!.uid));
 
+                        if (!(await roomPath.child("users").get()).exists){
+                          roomPath.update({
+                            "users": [currentUser!.uid, receiver.id]
+                          });
+                        }
+                        roomPath.child("messages").child(timestamp.toString()).set(message.toMap());
                         chatController.textEditingController.clear();
                       }
                     },
@@ -216,7 +188,6 @@ class ScreenChat extends StatelessWidget {
                   ),
                 ],
               ).paddingOnly(left: 10, right: 10),
-
               Obx(() {
                 return Offstage(
                   offstage: !chatController.isEmojiVisible.value,
@@ -224,8 +195,7 @@ class ScreenChat extends StatelessWidget {
                     height: 42.h,
                     child: EmojiPicker(
                       onEmojiSelected: (Category? category, Emoji emoji) {
-                        chatController.textEditingController.text = chatController.textEditingController.text+emoji.emoji;
-
+                        chatController.textEditingController.text = chatController.textEditingController.text + emoji.emoji;
                       },
                       // onBackspacePressed: () {},
                       config: Config(
@@ -262,10 +232,10 @@ class ScreenChat extends StatelessWidget {
               })
             ],
           ),
-          onWillPop: (){
+          onWillPop: () {
             if (chatController.isEmojiVisible.value) {
               chatController.isEmojiVisible.value = false;
-            }else{
+            } else {
               Navigator.canPop(context);
             }
             return Future.value(false);

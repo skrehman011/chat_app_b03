@@ -82,7 +82,7 @@ class RegistrationController extends GetxController {
         Get.snackbar('Success', 'Login SuccessFully');
         emailcontroller.clear();
         passwordController.clear();
-        Get.offAll(StreamSingleUser());
+        Get.offAll(HomePage());
         print(value.user!.email.toString());
       }).catchError((error) {
         Get.snackbar('error', error.toString());

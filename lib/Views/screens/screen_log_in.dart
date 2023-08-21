@@ -77,7 +77,7 @@ class ScreenLogIn extends StatelessWidget {
                   ),
                   child: TextButton(
                     onPressed: () {
-                      loginController.anonymousSignup();
+                      loginController.Login();
                     },
                     child: Text('Submit'),
                   ),
