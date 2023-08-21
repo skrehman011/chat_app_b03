@@ -41,7 +41,6 @@ class HomePage extends StatelessWidget {
 
           var lastMessages = snapshot.data!.docs.map((e) => MessageModel.fromMap(e.data() as Map<String, dynamic>)).toList();
 
-
           return lastMessages.isNotEmpty
               ? ListView.builder(
                   itemCount: lastMessages.length,
@@ -51,28 +50,37 @@ class HomePage extends StatelessWidget {
                     String oppositeUserId = message.sender_id == currentUser!.uid ? message.receiver_id : message.sender_id;
                     bool sentByMe = message.sender_id == currentUser!.uid;
 
-
                     return FutureBuilder<DocumentSnapshot>(
-                      future: usersRef.doc(oppositeUserId).get(),
-                      builder: (context, userSnapshot) {
+                        future: usersRef.doc(oppositeUserId).get(),
+                        builder: (context, userSnapshot) {
+                          if (userSnapshot.connectionState == ConnectionState.waiting) {
+                            return SizedBox();
+                          }
 
-                        if (userSnapshot.connectionState == ConnectionState.waiting){
-                          return SizedBox();
-                        }
+                          var user = Student.fromMap(userSnapshot.data!.data() as Map<String, dynamic>);
 
-                        var user = Student.fromMap(userSnapshot.data!.data() as Map<String, dynamic>);
-
-                        return ListTile(
-                          title: Text(user.name),
-                          subtitle: Text("${sentByMe ? "You" : user.name}: ${message.text}", maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          onTap: () {
-                            Get.to(ScreenChat(receiver: user));
-                          },
-                        );
-                      }
-                    );
+                          return ListTile(
+                            title: Text(user.name),
+                            leading: Container(
+                              height: 40,
+                              width: 40,
+                              decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.pink),
+                              alignment: Alignment.center,
+                              child: Text(
+                                user.name[0].toUpperCase(),
+                                style: TextStyle(fontSize: 20, color: Colors.white),
+                              ),
+                            ),
+                            subtitle: Text(
+                              "${sentByMe ? "You: " : ""}${message.text}",
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            onTap: () {
+                              Get.to(ScreenChat(receiver: user));
+                            },
+                          );
+                        });
                   },
                 )
               : Center(
