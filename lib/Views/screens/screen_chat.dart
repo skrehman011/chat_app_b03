@@ -168,15 +168,15 @@ class ScreenChat extends StatelessWidget {
                           text: chatController.textEditingController.text,
                           sender_id: currentUser!.uid,
                           timestamp: timestamp,
+                          receiver_id: receiver.id
                         );
 
                         var roomPath = chatsRef.child(getRoomId(receiver.id, currentUser!.uid));
 
-                        if (!(await roomPath.child("users").get()).exists){
-                          roomPath.update({
-                            "users": [currentUser!.uid, receiver.id]
-                          });
-                        }
+                        usersRef.doc(currentUser!.uid).collection('inbox').doc(receiver.id).set(message.toMap());
+                        usersRef.doc(receiver.id).collection('inbox').doc(currentUser!.uid).set(message.toMap());
+
+
                         roomPath.child("messages").child(timestamp.toString()).set(message.toMap());
                         chatController.textEditingController.clear();
                       }
