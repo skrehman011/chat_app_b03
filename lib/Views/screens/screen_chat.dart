@@ -209,7 +209,7 @@ class ScreenChat extends StatelessWidget {
                   },
                   child: Icon(
                     Icons.send,
-                    size: 20,
+                    size: 22,
                   ),
                 ),
               ],
@@ -243,7 +243,7 @@ class ScreenChat extends StatelessWidget {
                       recentTabBehavior: RecentTabBehavior.RECENT,
                       recentsLimit: 28,
                       noRecents: const Text(
-                        'No Recents',
+                        'No Recent',
                         style: TextStyle(fontSize: 20, color: Colors.black26),
                         textAlign: TextAlign.center,
                       ),
