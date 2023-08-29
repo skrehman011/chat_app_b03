@@ -11,10 +11,10 @@ class UserModel{
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is UserModel &&
-          runtimeType == other.runtimeType &&
-          id == other.id &&
-          token == other.token);
+          (other is UserModel &&
+              runtimeType == other.runtimeType &&
+              id == other.id &&
+              token == other.token);
 
   @override
   int get hashCode => id.hashCode ^ token.hashCode;

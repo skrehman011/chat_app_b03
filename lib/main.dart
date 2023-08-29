@@ -81,8 +81,8 @@ class _MyAppState extends State<MyApp> {
     final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
     const settingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
-        final settingsIOS =
-        DarwinInitializationSettings(onDidReceiveLocalNotification: (id, title, body,
+    final settingsIOS =
+    DarwinInitializationSettings(onDidReceiveLocalNotification: (id, title, body,
         payload) => null /*onSelectNotification(payload)*/);
     await flutterLocalNotificationsPlugin.initialize(InitializationSettings(android:
     settingsAndroid, iOS: settingsIOS));
@@ -90,39 +90,39 @@ class _MyAppState extends State<MyApp> {
         .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(channel);
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    RemoteNotification? notification = message.notification;
-    AndroidNotification? android = message.notification?.android;
-    AppleNotification? iOS = message.notification?.apple;
-    // If `onMessage` is triggered with a notification, construct our own
-    // local notification to show to users using the created channel.
-    if (notification != null && android != null) {
-    flutterLocalNotificationsPlugin.show(
-    notification.hashCode,
-    notification.title,
-    notification.body,
-    NotificationDetails(
-    android: AndroidNotificationDetails(channel.id, channel.name,
-    channelDescription: channel.description,
-    icon: android.smallIcon,
-    enableVibration: true,
-    // importance: Importance.max,
-    priority: Priority.max,
-    // ongoing: false,
-    // autoCancel: true,
-    // visibility: NotificationVisibility.public,
-    enableLights: true
-    // other properties...
-    ),
-    iOS: DarwinNotificationDetails(
-    sound: iOS?.sound?.name,
-    presentAlert: true,
-    presentBadge: true,
-    presentSound: true,
-    )));
-    // showOngoingNotification(flutterLocalNotificationsPlugin, title:
-    notification.title ?? "This is notification"; body: notification.body ?? "Hello notification";
+      RemoteNotification? notification = message.notification;
+      AndroidNotification? android = message.notification?.android;
+      AppleNotification? iOS = message.notification?.apple;
+      // If `onMessage` is triggered with a notification, construct our own
+      // local notification to show to users using the created channel.
+      if (notification != null && android != null) {
+        flutterLocalNotificationsPlugin.show(
+            notification.hashCode,
+            notification.title,
+            notification.body,
+            NotificationDetails(
+                android: AndroidNotificationDetails(channel.id, channel.name,
+                    channelDescription: channel.description,
+                    icon: android.smallIcon,
+                    enableVibration: true,
+                    // importance: Importance.max,
+                    priority: Priority.max,
+                    // ongoing: false,
+                    // autoCancel: true,
+                    // visibility: NotificationVisibility.public,
+                    enableLights: true
+                  // other properties...
+                ),
+                iOS: DarwinNotificationDetails(
+                  sound: iOS?.sound?.name,
+                  presentAlert: true,
+                  presentBadge: true,
+                  presentSound: true,
+                )));
+        // showOngoingNotification(flutterLocalNotificationsPlugin, title:
+        notification.title ?? "This is notification"; body: notification.body ?? "Hello notification";
 
-    }
+      }
     });
   }
   void initNotificationChannel() async {

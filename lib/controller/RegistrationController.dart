@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:mondaytest/Models/user_model.dart';
-import 'package:mondaytest/Views/screens/stream%20builder/stream_single_user.dart';
 import 'package:mondaytest/helper/constants.dart';
 import 'package:mondaytest/homepagestf.dart';
 
@@ -28,19 +27,22 @@ class RegistrationController extends GetxController {
       await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password)
           .then((value) {
-         Get.snackbar('Success', 'User Register Successfully');
+        Get.snackbar('Success', 'User Register Successfully');
         emailcontroller.clear();
         nameController.clear();
         passwordController.clear();
         ageController.clear();
 
         Student user = Student(
-          id: value.user!.uid,
-          email: email,
-          password: password,
-          name: name,
-          age: int.tryParse(age) ?? 0,
+            id: value.user!.uid,
+            email: email,
+            password: password,
+            name: name,
+            age: int.tryParse(age) ?? 0,
+            lastSeen: DateTime.now().millisecondsSinceEpoch
         );
+
+        currentUser!.updateDisplayName(name);
 
         FirebaseFirestore.instance
             .collection('users')
@@ -78,10 +80,15 @@ class RegistrationController extends GetxController {
     } else {
       await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password)
-          .then((value) {
+          .then((value) async {
         Get.snackbar('Success', 'Login SuccessFully');
         emailcontroller.clear();
         passwordController.clear();
+
+        var myDoc = await usersRef.doc(currentUser!.uid).get();
+        var obj = Student.fromMap(myDoc.data()!);
+        currentUser!.updateDisplayName(obj.name);
+
         Get.offAll(HomePage());
         print(value.user!.email.toString());
       }).catchError((error) {
@@ -90,23 +97,5 @@ class RegistrationController extends GetxController {
     }
   }
 
-  var isEmojiVisible = false.obs;
-  FocusNode focusNode = FocusNode();
-  var textEditingController = TextEditingController();
 
-  @override
-  void onInit() {
-    super.onInit();
-    focusNode.addListener(() {
-      if (focusNode.hasFocus) {
-        isEmojiVisible.value = false;
-      }
-    });
-  }
-
-  @override
-  void onClose() {
-    super.onClose();
-    textEditingController.dispose();
-  }
 }

@@ -15,10 +15,22 @@ class ScreenAllUsers extends StatelessWidget {
       ),
       body: FutureBuilder(
         future: usersRef.get(),
-        builder: (_, snapshot) {
+        builder: (_, AsyncSnapshot snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
               child: CircularProgressIndicator(),
+            );
+          }
+
+          if (snapshot.hasError) {
+            return Center(
+              child: Text("Error: ${snapshot.error.toString()}"),
+            );
+          }
+
+          if (!snapshot.hasData || snapshot.data == null) {
+            return Center(
+              child: Text("No user data available."),
             );
           }
 
@@ -27,6 +39,12 @@ class ScreenAllUsers extends StatelessWidget {
               .where((element) => element.id != currentUser!.uid)
               .toList();
 
+          if (users.isEmpty) {
+            return Center(
+              child: Text("No users to display."),
+            );
+          }
+
           return ListView.builder(
             itemCount: users.length,
             itemBuilder: (BuildContext context, int index) {
@@ -34,7 +52,7 @@ class ScreenAllUsers extends StatelessWidget {
 
               return ListTile(
                 title: Text(student.name),
-                onTap: (){
+                onTap: () {
                   Get.to(ScreenChat(receiver: student));
                 },
               );

@@ -3,5 +3,5 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 
 var usersRef = FirebaseFirestore.instance.collection("users");
-var chatsRef = FirebaseDatabase.instance.ref().child('chat_rooms');
+var chatsRef = FirebaseDatabase.instance.ref().child('chats');
 User? get currentUser => FirebaseAuth.instance.currentUser;

@@ -33,7 +33,7 @@ class StreamSingleUser extends StatelessWidget {
           fontSize: 23,
         ),),
         centerTitle: true,
-       ),
+      ),
       body: Column(
         children: [
           Expanded(
@@ -48,7 +48,7 @@ class StreamSingleUser extends StatelessWidget {
                   }
 
                   var data = snapshot.data!.data() as Map<String, dynamic>;
-                  var user = Student.formMap(data);
+                  var user = Student.fromMap(data);
 
                   return ListTile(
                       title: Text(' ${user.name},  ${user.age}'),
@@ -60,6 +60,6 @@ class StreamSingleUser extends StatelessWidget {
           }, child: Text('Stream Multi User'))
         ],
       ),
-      );
+    );
   }
 }

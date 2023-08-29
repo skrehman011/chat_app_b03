@@ -2,10 +2,11 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:intl/intl.dart';
 import 'package:mondaytest/Models/message_model.dart';
-import 'package:mondaytest/Models/user_model.dart';
+import 'package:mondaytest/Views/screens/screen_image_view.dart';
+import 'package:mondaytest/Views/screens/stream%20builder/screen_image_view.dart';
+import 'package:mondaytest/controller/chat_controller.dart';
 import 'package:mondaytest/helper/Fcm.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 
@@ -15,17 +16,31 @@ import '../../helper/constants.dart';
 
 class ScreenChat extends StatelessWidget {
   Student receiver;
-  RegistrationController chatController = Get.put(RegistrationController());
 
   @override
   Widget build(BuildContext context) {
+    ChatController chatController =
+        Get.put(ChatController(receiver_id: receiver.id));
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title: Text(
-          receiver.name,
-          style: TextStyle(color: Colors.black),
+        title: ListTile(
+          title: Text(
+            receiver.name,
+            style: TextStyle(
+                color: Colors.black,
+                fontSize: 18.sp,
+                fontWeight: FontWeight.bold),
+          ),
+          subtitle: GetBuilder<ChatController>(
+              init: chatController,
+              builder: (logic) {
+                return Text(formatRelativeTime(
+                    chatController.receiverObservable.value?.lastSeen ?? 0));
+              }),
         ),
+        centerTitle: false,
         leading: IconButton(
           onPressed: () {
             Get.back();
@@ -40,9 +55,14 @@ class ScreenChat extends StatelessWidget {
             children: [
               Expanded(
                   child: StreamBuilder<DatabaseEvent>(
-                      stream: chatsRef.child(getRoomId(receiver.id, currentUser!.uid)).child("messages").onValue,
+                      stream: chatsRef
+                          .child(chatController.getRoomId(
+                              receiver.id, currentUser!.uid))
+                          .child("messages")
+                          .onValue,
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
                           return Center(
                             child: CircularProgressIndicator(),
                           );
@@ -56,8 +76,10 @@ class ScreenChat extends StatelessWidget {
                           );
                         }
 
-                        List<MessageModel> messages =
-                            data.snapshot.children.map((e) => MessageModel.fromMap(Map<String, dynamic>.from(e.value as Map))).toList();
+                        List<MessageModel> messages = data.snapshot.children
+                            .map((e) => MessageModel.fromMap(
+                                Map<String, dynamic>.from(e.value as Map)))
+                            .toList();
 
                         return messages.isNotEmpty
                             ? ListView.builder(
@@ -66,30 +88,69 @@ class ScreenChat extends StatelessWidget {
                                   var message = messages[index];
 
                                   return Align(
-                                    alignment: message.sender_id == currentUser!.uid ? Alignment.centerRight : Alignment.centerLeft,
+                                    alignment:
+                                        message.sender_id == currentUser!.uid
+                                            ? Alignment.centerRight
+                                            : Alignment.centerLeft,
                                     child: Container(
-                                      padding: EdgeInsets.only(bottom: 5, top: 5, left: 10, right: 5),
+                                      padding: EdgeInsets.only(
+                                          bottom: 5,
+                                          top: 5,
+                                          left: 10,
+                                          right: 5),
                                       margin: EdgeInsets.only(bottom: 10),
                                       width: Device.width * .67,
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.only(
-                                          topRight: message.sender_id == currentUser!.uid ? Radius.circular(0) : Radius.circular(20),
-                                          topLeft: message.sender_id == currentUser!.uid ? Radius.circular(20) : Radius.circular(0),
-                                          bottomLeft: message.sender_id == currentUser!.uid ? Radius.circular(0) : Radius.circular(20),
-                                          bottomRight: message.sender_id == currentUser!.uid ? Radius.circular(20) : Radius.circular(0),
+                                          topRight: message.sender_id ==
+                                                  currentUser!.uid
+                                              ? Radius.circular(0)
+                                              : Radius.circular(20),
+                                          topLeft: message.sender_id ==
+                                                  currentUser!.uid
+                                              ? Radius.circular(20)
+                                              : Radius.circular(0),
+                                          bottomLeft: message.sender_id ==
+                                                  currentUser!.uid
+                                              ? Radius.circular(0)
+                                              : Radius.circular(20),
+                                          bottomRight: message.sender_id ==
+                                                  currentUser!.uid
+                                              ? Radius.circular(20)
+                                              : Radius.circular(0),
                                         ),
-                                        color:
-                                            message.sender_id == currentUser!.uid ? Colors.greenAccent.withOpacity(.7) : Colors.grey.withOpacity(.3),
+                                        color: message.sender_id ==
+                                                currentUser!.uid
+                                            ? Colors.greenAccent.withOpacity(.7)
+                                            : Colors.grey.withOpacity(.3),
                                       ),
                                       child: ListTile(
-                                        title: Text(message.text),
-                                        subtitle: Text(message.sender_id == currentUser!.uid ? "You" : receiver.name),
+                                        title: message.message_type == 'text'
+                                            ? Text(message.text)
+                                            : GestureDetector(
+                                                onTap: () {
+                                                  Get.to(ScreenImageView(
+                                                      url: message.text));
+                                                },
+                                                child: Image.network(
+                                                  message.text,
+                                                ),
+                                              ),
+                                        subtitle: Text(message.sender_id ==
+                                                currentUser!.uid
+                                            ? "You"
+                                            : receiver.name),
                                         trailing: Column(
-                                          mainAxisAlignment: MainAxisAlignment.end,
-                                          crossAxisAlignment: CrossAxisAlignment.end,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          mainAxisSize: MainAxisSize.min,
                                           children: [
                                             Text(
-                                              DateFormat("hh:mm").format(DateTime.fromMillisecondsSinceEpoch(message.timestamp)),
+                                              DateFormat("hh:mm").format(DateTime
+                                                  .fromMillisecondsSinceEpoch(
+                                                      message.timestamp)),
                                             ),
                                           ],
                                         ),
@@ -111,19 +172,23 @@ class ScreenChat extends StatelessWidget {
                     child: Container(
                       margin: EdgeInsets.only(right: 10),
                       decoration: BoxDecoration(
-                          color: Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(width: 0.1, color: Colors.black)),
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(width: 0.1, color: Colors.black)),
                       child: Row(
                         children: [
                           IconButton(
                             onPressed: () {
-                              chatController.isEmojiVisible.value = !chatController.isEmojiVisible.value;
+                              chatController.isEmojiVisible.value =
+                                  !chatController.isEmojiVisible.value;
                               chatController.focusNode.unfocus();
                               chatController.focusNode.canRequestFocus = true;
                             },
                             icon: Icon(Icons.emoji_emotions_rounded),
                             highlightColor: Colors.transparent,
                             // Set highlight color to transparent
-                            splashColor: Colors.transparent, // Set splash color to transparent
+                            splashColor: Colors
+                                .transparent, // Set splash color to transparent
                           ),
                           Expanded(
                             child: TextFormField(
@@ -137,11 +202,14 @@ class ScreenChat extends StatelessWidget {
                             ),
                           ),
                           IconButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              chatController.pickImage();
+                            },
                             icon: Icon(Icons.camera_alt),
                             highlightColor: Colors.transparent,
                             // Set highlight color to transparent
-                            splashColor: Colors.transparent, // Set splash color to transparent
+                            splashColor: Colors
+                                .transparent, // Set splash color to transparent
                           ),
                         ],
                       ),
@@ -153,33 +221,8 @@ class ScreenChat extends StatelessWidget {
                     splashColor: Colors.transparent,
                     mini: true,
                     onPressed: () async {
-                      if (chatController.textEditingController.text.isNotEmpty) {
-                        FCM.sendMessageSingle(
-                          "New message",
-                          chatController.textEditingController.text,
-                          receiver.token ?? "",
-                          {},
-                        );
-
-                        var timestamp = DateTime.now().millisecondsSinceEpoch;
-
-                        var message = MessageModel(
-                          id: timestamp.toString(),
-                          text: chatController.textEditingController.text,
-                          sender_id: currentUser!.uid,
-                          timestamp: timestamp,
-                          receiver_id: receiver.id
-                        );
-
-                        var roomPath = chatsRef.child(getRoomId(receiver.id, currentUser!.uid));
-
-                        usersRef.doc(currentUser!.uid).collection('inbox').doc(receiver.id).set(message.toMap());
-                        usersRef.doc(receiver.id).collection('inbox').doc(currentUser!.uid).set(message.toMap());
-
-
-                        roomPath.child("messages").child(timestamp.toString()).set(message.toMap());
-                        chatController.textEditingController.clear();
-                      }
+                      chatController.sendMessage(
+                          chatController.textEditingController.text);
                     },
                     child: Icon(
                       Icons.send,
@@ -195,7 +238,9 @@ class ScreenChat extends StatelessWidget {
                     height: 42.h,
                     child: EmojiPicker(
                       onEmojiSelected: (Category? category, Emoji emoji) {
-                        chatController.textEditingController.text = chatController.textEditingController.text + emoji.emoji;
+                        chatController.textEditingController.text =
+                            chatController.textEditingController.text +
+                                emoji.emoji;
                       },
                       // onBackspacePressed: () {},
                       config: Config(
@@ -245,14 +290,38 @@ class ScreenChat extends StatelessWidget {
     );
   }
 
-  String getRoomId(String user1, String user2) {
-    var merge = "$user1$user2";
-    var charList = merge.split('');
-    charList.sort((a, b) => a.compareTo(b));
-    return charList.join();
-  }
-
   ScreenChat({
     required this.receiver,
   });
+
+  String formatRelativeTime(int millisecondsSinceEpoch) {
+    final now = DateTime.now();
+    final timestamp =
+        DateTime.fromMillisecondsSinceEpoch(millisecondsSinceEpoch);
+    final difference = now.difference(timestamp);
+
+    if (millisecondsSinceEpoch == 0) {
+      return 'loading...';
+    }
+
+    if (difference.inSeconds <= 10) {
+      return "Online";
+    }
+
+    if (difference.inSeconds < 60) {
+      return '${difference.inSeconds} sec ago';
+    } else if (difference.inMinutes < 60) {
+      return '${difference.inMinutes} min ago';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours} hours ago';
+    } else if (difference.inDays < 30) {
+      return '${difference.inDays} days ago';
+    } else if (difference.inDays < 365) {
+      final months = (difference.inDays / 30).floor();
+      return '$months months ago';
+    } else {
+      final years = (difference.inDays / 365).floor();
+      return '$years years ago';
+    }
+  }
 }

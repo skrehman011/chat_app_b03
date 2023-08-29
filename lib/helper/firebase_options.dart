@@ -19,7 +19,7 @@ class DefaultFirebaseOptions {
     if (kIsWeb) {
       throw UnsupportedError(
         'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
+            'you can reconfigure this by running the FlutterFire CLI again.',
       );
     }
     switch (defaultTargetPlatform) {
@@ -30,17 +30,17 @@ class DefaultFirebaseOptions {
       case TargetPlatform.macOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
+              'you can reconfigure this by running the FlutterFire CLI again.',
         );
       case TargetPlatform.windows:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
+              'you can reconfigure this by running the FlutterFire CLI again.',
         );
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
+              'you can reconfigure this by running the FlutterFire CLI again.',
         );
       default:
         throw UnsupportedError(
@@ -50,20 +50,20 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCNMo0nE_-dQakvMQjFOU5HSA1w5lzIeEk',
-    appId: '1:574020499324:android:4fecde4ebdcf63c6ab96f9',
-    messagingSenderId: '574020499324',
-    projectId: 'whatsap-50aee',
-    storageBucket: 'whatsap-50aee.appspot.com',
+    apiKey: 'AIzaSyD06AeTD8mKCeRSboQdEAjp3bDkye8GG2Y',
+    appId: '1:880771204155:android:bd035d68de02869114481e',
+    messagingSenderId: '880771204155',
+    projectId: 'test-d6cb4',
+    storageBucket: 'test-d6cb4.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBoTktYooQ70nFbxFv9bB10JFMwJUxD0xs',
-    appId: '1:574020499324:ios:37cfd30ea08ac491ab96f9',
-    messagingSenderId: '574020499324',
-    projectId: 'whatsap-50aee',
-    storageBucket: 'whatsap-50aee.appspot.com',
-    iosClientId: '574020499324-7s6ms34likrdh5i4oatubufo0rf0v6fk.apps.googleusercontent.com',
+    apiKey: 'AIzaSyAJYH5Co5luNqbV0SYov-3fOWoxq2k7QEk',
+    appId: '1:880771204155:ios:e507d0cf9bccd2e914481e',
+    messagingSenderId: '880771204155',
+    projectId: 'test-d6cb4',
+    storageBucket: 'test-d6cb4.appspot.com',
+    iosClientId: '880771204155-g4bpmuonajetq4hhg8k8scg94uctlmhq.apps.googleusercontent.com',
     iosBundleId: 'com.example.mondaytest',
   );
 }
