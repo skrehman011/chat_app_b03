@@ -37,20 +37,64 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('home page'),
-        actions: [
-          IconButton(
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(56.0),
+        child: AppBar(
+          backgroundColor: Color(0xFF075E54),
+          title: Row(
+            children: [
+              CircleAvatar(
+                backgroundImage:
+                    NetworkImage('https://your-profile-image-url.jpg'),
+                radius: 20,
+              ),
+              SizedBox(width: 10),
+              Text(
+                'WhatsApp',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            IconButton(
               onPressed: () {
-                FirebaseAuth.instance
-                    .signOut()
-                    .then((value) => Get.offAll(ScreenLogIn()));
+                // Add your custom logic for the search action
               },
               icon: Icon(
-                Icons.logout,
-                color: Colors.black,
-              ))
-        ],
+                Icons.search,
+                color: Colors.white,
+              ),
+            ),
+            PopupMenuButton(
+              onSelected: (value) {
+                if (value == 'logout') {
+                  FirebaseAuth.instance
+                      .signOut()
+                      .then((value) => Get.offAll(ScreenLogIn()));
+                }
+                // You can add more items and their corresponding actions here
+              },
+              itemBuilder: (BuildContext context) {
+                return [
+                  'Logout',
+                  'New group',
+                  'Setting',
+                  'Advertise',
+                  'Linked Device',
+                ].map((String option) {
+                  return PopupMenuItem<String>(
+                    value: option.toLowerCase(),
+                    child: Text(option),
+                  );
+                }).toList();
+              },
+            ),
+          ],
+          elevation: 0,
+        ),
       ),
       body: StreamBuilder(
         stream: chatsRef.onValue,
@@ -64,7 +108,7 @@ class _HomePageState extends State<HomePage> {
           if (snapshot.data?.snapshot == null ||
               !snapshot.data!.snapshot.exists) {
             return Center(
-              child: Text("No groups"),
+              child: Text("No chats"),
             );
           }
 
@@ -73,16 +117,23 @@ class _HomePageState extends State<HomePage> {
                   RoomInfo.fromMap(Map<String, dynamic>.from(e.value as Map)))
               .toList();
 
-          return ListView.builder(
-            itemCount: chats.length,
-            itemBuilder: (BuildContext context, int index) {
-              var item = chats[index];
+          chats.removeWhere(
+              (element) => !element.participants.contains(currentUser!.uid));
 
-              return item.roomType == 'group'
-                  ? getGroupItem(item)
-                  : getUserItem(item);
-            },
-          );
+          return chats.isEmpty
+              ? Center(
+                  child: Text("No chats"),
+                )
+              : ListView.builder(
+                  itemCount: chats.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    var item = chats[index];
+
+                    return item.roomType == 'group'
+                        ? getGroupItem(item)
+                        : getUserItem(item);
+                  },
+                );
         },
       ),
       floatingActionButton: FloatingActionButton(
