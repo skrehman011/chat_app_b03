@@ -12,6 +12,7 @@ import 'package:mondaytest/Views/screens/screen_all_users.dart';
 import 'package:mondaytest/Views/screens/screen_chat.dart';
 import 'package:mondaytest/Views/screens/screen_group_chat.dart';
 import 'package:mondaytest/Views/screens/screen_log_in.dart';
+import 'package:mondaytest/controller/home_controller.dart';
 import 'package:mondaytest/helper/Fcm.dart';
 import 'package:mondaytest/helper/cached_data.dart';
 import 'package:mondaytest/helper/constants.dart';
@@ -36,6 +37,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    var homeController = Get.put(HomeController());
+
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(56.0),
@@ -43,10 +46,15 @@ class _HomePageState extends State<HomePage> {
           backgroundColor: Color(0xFF075E54),
           title: Row(
             children: [
-              CircleAvatar(
-                backgroundImage:
-                    NetworkImage('https://your-profile-image-url.jpg'),
-                radius: 20,
+              Container(
+                height: 40,
+                width: 40,
+                child: Center(
+                    child: Text(
+                  currentUser?.displayName?[0].toUpperCase() ?? "",
+                  style: TextStyle(fontSize: 20, color: Colors.white),
+                )),
+                decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.pink),
               ),
               SizedBox(width: 10),
               Text(
@@ -71,9 +79,7 @@ class _HomePageState extends State<HomePage> {
             PopupMenuButton(
               onSelected: (value) {
                 if (value == 'logout') {
-                  FirebaseAuth.instance
-                      .signOut()
-                      .then((value) => Get.offAll(ScreenLogIn()));
+                  FirebaseAuth.instance.signOut().then((value) => Get.offAll(ScreenLogIn()));
                 }
                 // You can add more items and their corresponding actions here
               },
@@ -96,46 +102,25 @@ class _HomePageState extends State<HomePage> {
           elevation: 0,
         ),
       ),
-      body: StreamBuilder(
-        stream: chatsRef.onValue,
-        builder: (BuildContext context, AsyncSnapshot<DatabaseEvent> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-
-          if (snapshot.data?.snapshot == null ||
-              !snapshot.data!.snapshot.exists) {
-            return Center(
-              child: Text("No chats"),
-            );
-          }
-
-          var chats = snapshot.data!.snapshot.children
-              .map((e) =>
-                  RoomInfo.fromMap(Map<String, dynamic>.from(e.value as Map)))
-              .toList();
-
-          chats.removeWhere(
-              (element) => !element.participants.contains(currentUser!.uid));
-
-          return chats.isEmpty
-              ? Center(
-                  child: Text("No chats"),
-                )
-              : ListView.builder(
-                  itemCount: chats.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    var item = chats[index];
-
-                    return item.roomType == 'group'
-                        ? getGroupItem(item)
-                        : getUserItem(item);
-                  },
-                );
-        },
-      ),
+      body: Obx(() {
+        return homeController.chatsList.isEmpty
+            ? Center(
+                child: Text("No chats"),
+              )
+            : ListView.builder(
+                itemCount: homeController.chatsList.length,
+                itemBuilder: (BuildContext context, int index) {
+                  var item = homeController.chatsList[index];
+                  return item.roomType == 'group'
+                      ? getGroupItem(item, onClick: () {
+                          homeController.setSelectedId(item.id);
+                        })
+                      : getUserItem(item, onClick: () {
+                    homeController.setSelectedId(item.id);
+                  });
+                },
+              );
+      }),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Get.to(ScreenAllUsers());
@@ -145,7 +130,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget getUserItem(RoomInfo item) {
+  Widget getUserItem(RoomInfo item, {required VoidCallback onClick}) {
     var users = item.participants;
     users.removeWhere((element) => element == currentUser!.uid);
     var receiver = users.first;
@@ -169,9 +154,9 @@ class _HomePageState extends State<HomePage> {
 
           return ListTile(
             title: Text(name),
-            subtitle:
-                item.lastMessage == null ? null : Text(item.lastMessage!.text),
+            subtitle: item.lastMessage == null ? null : Text(item.lastMessage!.text),
             onTap: () {
+              onClick();
               Get.to(
                 ScreenChat(
                   receiver: userSnapshot.data!,
@@ -186,22 +171,20 @@ class _HomePageState extends State<HomePage> {
                 name[0].toUpperCase(),
                 style: TextStyle(fontSize: 20, color: Colors.white),
               )),
-              decoration:
-                  BoxDecoration(shape: BoxShape.circle, color: Colors.pink),
+              decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.pink),
             ),
           );
         });
   }
 
-  Widget getGroupItem(RoomInfo item) {
+  Widget getGroupItem(RoomInfo item, {required VoidCallback onClick}) {
     return ListTile(
       title: Text(item.name),
       subtitle: item.lastMessage == null ? null : Text(item.lastMessage!.text),
       onTap: () {
+        onClick();
         Get.to(
-          ScreenGroupChat(
-            roomInfo: item,
-          ),
+          ScreenGroupChat(),
         );
       },
       leading: Container(
@@ -224,9 +207,7 @@ class _HomePageState extends State<HomePage> {
 
   void startLastSeenUpdates() {
     Timer.periodic(Duration(seconds: 10), (timer) {
-      usersRef
-          .doc(currentUser!.uid)
-          .update({'lastSeen': DateTime.now().millisecondsSinceEpoch});
+      usersRef.doc(currentUser!.uid).update({'lastSeen': DateTime.now().millisecondsSinceEpoch});
     });
   }
 }

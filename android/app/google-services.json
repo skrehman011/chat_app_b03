@@ -1,34 +1,42 @@
 {
   "project_info": {
-    "project_number": "574020499324",
-    "project_id": "whatsap-50aee",
-    "storage_bucket": "whatsap-50aee.appspot.com"
+    "project_number": "880771204155",
+    "firebase_url": "https://test-d6cb4-default-rtdb.firebaseio.com",
+    "project_id": "test-d6cb4",
+    "storage_bucket": "test-d6cb4.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:574020499324:android:4fecde4ebdcf63c6ab96f9",
+        "mobilesdk_app_id": "1:880771204155:android:bd035d68de02869114481e",
         "android_client_info": {
           "package_name": "com.example.mondaytest"
         }
       },
       "oauth_client": [
         {
-          "client_id": "574020499324-95ntnmp3on1f6l02269lbgdgplnol5rk.apps.googleusercontent.com",
+          "client_id": "880771204155-6dabl2ac37r9phk5qmss2c6lp5mf588u.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyCNMo0nE_-dQakvMQjFOU5HSA1w5lzIeEk"
+          "current_key": "AIzaSyD06AeTD8mKCeRSboQdEAjp3bDkye8GG2Y"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "574020499324-95ntnmp3on1f6l02269lbgdgplnol5rk.apps.googleusercontent.com",
+              "client_id": "880771204155-6dabl2ac37r9phk5qmss2c6lp5mf588u.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "880771204155-g4bpmuonajetq4hhg8k8scg94uctlmhq.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.mondaytest"
+              }
             }
           ]
         }

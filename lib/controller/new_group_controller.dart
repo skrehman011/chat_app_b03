@@ -5,34 +5,10 @@ import 'package:mondaytest/helper/constants.dart';
 import '../Models/Student.dart';
 
 class NewGroupController extends GetxController {
-  RxList<Student> studentsList = RxList([]);
-  RxList<Student> selectedStudents = RxList([]);
   RxBool createGroupLoading = false.obs;
 
-  @override
-  void onInit() {
-    usersRef.get().then((value) {
-      studentsList.value = value.docs
-          .map((e) => Student.fromMap(e.data() as Map<String, dynamic>))
-          .toList();
-      studentsList.removeWhere((element) => element.id == currentUser!.uid);
-    });
-    super.onInit();
-  }
 
-  void addToSelected(Student student) {
-    if (selectedStudents.contains(student)) {
-      selectedStudents.remove(student);
-    } else {
-      selectedStudents.add(student);
-    }
-  }
-
-  void removeSelected(Student student) {
-    selectedStudents.remove(student);
-  }
-
-  Future<void> createGroup(String name) async {
+  Future<void> createGroup(String name, List<Student> selectedStudents) async {
     if (name.isEmpty) {
       return;
     }
