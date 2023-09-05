@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:mondaytest/Models/Student.dart';
 import 'package:mondaytest/Models/group_info.dart';
@@ -7,6 +8,7 @@ import 'package:mondaytest/Views/screens/screen_select_participants.dart';
 import 'package:mondaytest/controller/home_controller.dart';
 import 'package:mondaytest/helper/cached_data.dart';
 import 'package:mondaytest/helper/constants.dart';
+import 'package:share_plus/share_plus.dart';
 
 class ScreenGroupInfo extends StatelessWidget {
   @override
@@ -87,18 +89,46 @@ class ScreenGroupInfo extends StatelessWidget {
                   ),
                 ),
                 ListTile(
+                  onTap: () async {
+                    print('creating');
+                    var url = await buildDynamicLinks(homeController.selectedRoomInfo.value!.name, 'Group Description sample', '', homeController.selectedRoomInfo.value!.id, true);
+                    Share.share('Click here to join my WhatsApp Group:\n$url', subject: "Group invite link");
+                  },
                   leading: Container(
                     height: 40,
                     width: 40,
                     child: Center(
                         child: Icon(
-                      Icons.link,
+                      Icons.share,
                       color: Colors.white,
                     )),
                     decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.pink),
                   ),
                   title: Text(
                     "Invite Participants",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                ListTile(
+                  onTap: () async {
+                    print('creating');
+                    var url = await buildDynamicLinks(homeController.selectedRoomInfo.value!.name, 'Group Description sample', '', homeController.selectedRoomInfo.value!.id, true);
+                    Clipboard.setData(ClipboardData(text: 'Click here to join my WhatsApp Group:\n$url')).then((value) {
+                      Get.snackbar("Success", "Invite copied to clipboard");
+                    });
+                  },
+                  leading: Container(
+                    height: 40,
+                    width: 40,
+                    child: Center(
+                        child: Icon(
+                      Icons.copy,
+                      color: Colors.white,
+                    )),
+                    decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.pink),
+                  ),
+                  title: Text(
+                    "Copy to clipboard",
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
