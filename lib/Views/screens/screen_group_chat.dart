@@ -1,29 +1,27 @@
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:mondaytest/Views/screens/screen_chat.dart';
 import 'package:mondaytest/Views/screens/screen_group_info.dart';
 import 'package:mondaytest/Views/screens/screen_image_view.dart';
-import 'package:mondaytest/Views/screens/stream%20builder/screen_image_view.dart';
 import 'package:mondaytest/controller/home_controller.dart';
 import 'package:mondaytest/helper/constants.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../Models/Student.dart';
-import '../../Models/group_info.dart';
 import '../../Models/message_model.dart';
 import '../../controller/grop_chat_controller.dart';
 import '../../helper/cached_data.dart';
 
 class ScreenGroupChat extends StatelessWidget {
-
-
   @override
   Widget build(BuildContext context) {
     var homeController = Get.put(HomeController());
-    var chatController = Get.put(GroupChatController(group_id: homeController.selectedRoomInfo.value!.id));
+    var chatController = Get.put(GroupChatController(
+        group_id: homeController.selectedRoomInfo.value!.id));
 
     return Scaffold(
       appBar: AppBar(
@@ -74,70 +72,111 @@ class ScreenGroupChat extends StatelessWidget {
                         );
                       }
 
-                      List<MessageModel> messages =
-                      data.snapshot.children.map((e) => MessageModel.fromMap(Map<String, dynamic>.from(e.value as Map))).toList();
+                      List<MessageModel> messages = data.snapshot.children
+                          .map((e) => MessageModel.fromMap(
+                              Map<String, dynamic>.from(e.value as Map)))
+                          .toList();
 
                       return messages.isNotEmpty
                           ? ListView.builder(
-                        itemCount: messages.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          var message = messages[index];
-                          return Align(
-                            alignment: message.sender_id == currentUser!.uid ? Alignment.centerRight : Alignment.centerLeft,
-                            child: Container(
-                              padding: EdgeInsets.only(bottom: 5, top: 5, left: 10, right: 5),
-                              margin: EdgeInsets.only(bottom: 10),
-                              width: Device.width * .67,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.only(
-                                  topRight: message.sender_id == currentUser!.uid ? Radius.circular(0) : Radius.circular(20),
-                                  topLeft: message.sender_id == currentUser!.uid ? Radius.circular(20) : Radius.circular(0),
-                                  bottomLeft: message.sender_id == currentUser!.uid ? Radius.circular(0) : Radius.circular(20),
-                                  bottomRight: message.sender_id == currentUser!.uid ? Radius.circular(20) : Radius.circular(0),
-                                ),
-                                color: message.sender_id == currentUser!.uid ? Colors.greenAccent.withOpacity(.7) : Colors.grey.withOpacity(.3),
-                              ),
-                              child: ListTile(
-                                title: message.message_type == 'text'
-                                    ? Text(message.text)
-                                    : GestureDetector(
-                                  onTap: () {
-                                    Get.to(ScreenImageView(url: message.text));
-                                  },
-                                  child: Image.network(
-                                    message.text,
-                                  ),
-                                ),
-                                subtitle: FutureBuilder(
-                                  future: CachedData.getStudentById(message.sender_id),
-                                  builder: (BuildContext context, AsyncSnapshot<Student> snapshot) {
-                                    if (snapshot.connectionState == ConnectionState.waiting) {
-                                      return Text("...");
-                                    }
-                                    return Text(message.sender_id == currentUser!.uid ? "You" : snapshot.data?.name ?? "");
-                                  },
-                                ),
-                                trailing: Column(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      DateFormat("hh:mm").format(DateTime.fromMillisecondsSinceEpoch(message.timestamp)),
+                              itemCount: messages.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                var message = messages[index];
+                                return Align(
+                                  alignment:
+                                      message.sender_id == currentUser!.uid
+                                          ? Alignment.centerRight
+                                          : Alignment.centerLeft,
+                                  child: Container(
+                                    padding: EdgeInsets.only(
+                                        bottom: 5, top: 5, left: 10, right: 5),
+                                    margin: EdgeInsets.only(bottom: 10),
+                                    width: Device.width * .67,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.only(
+                                        topRight: message.sender_id ==
+                                                currentUser!.uid
+                                            ? Radius.circular(0)
+                                            : Radius.circular(20),
+                                        topLeft: message.sender_id ==
+                                                currentUser!.uid
+                                            ? Radius.circular(20)
+                                            : Radius.circular(0),
+                                        bottomLeft: message.sender_id ==
+                                                currentUser!.uid
+                                            ? Radius.circular(0)
+                                            : Radius.circular(20),
+                                        bottomRight: message.sender_id ==
+                                                currentUser!.uid
+                                            ? Radius.circular(20)
+                                            : Radius.circular(0),
+                                      ),
+                                      color: message.sender_id ==
+                                              currentUser!.uid
+                                          ? Colors.greenAccent.withOpacity(.7)
+                                          : Colors.grey.withOpacity(.3),
                                     ),
-                                  ],
-                                ),
-                              ),
-                            ).paddingOnly(
-                              left: 15,
-                              right: 15,
-                            ),
-                          );
-                        },
-                      )
+                                    child: ListTile(
+                                      title: message.message_type == 'text'
+                                          ? Linkify(
+                                              text: message.text,
+                                              style: TextStyle(fontSize: 18),
+                                              options: LinkifyOptions(
+                                                  humanize: false),
+                                              linkStyle:
+                                                  TextStyle(color: Colors.red),
+                                              onOpen: (link) {
+                                                launchUrl(Uri.parse(link.url));
+                                              },
+                                            )
+                                          : GestureDetector(
+                                              onTap: () {
+                                                Get.to(ScreenImageView(
+                                                    url: message.text));
+                                              },
+                                              child: Image.network(
+                                                message.text,
+                                              ),
+                                            ),
+                                      subtitle: FutureBuilder(
+                                        future: CachedData.getStudentById(
+                                            message.sender_id),
+                                        builder: (BuildContext context,
+                                            AsyncSnapshot<Student> snapshot) {
+                                          if (snapshot.connectionState ==
+                                              ConnectionState.waiting) {
+                                            return Text("...");
+                                          }
+                                          return Text(message.sender_id ==
+                                                  currentUser!.uid
+                                              ? "You"
+                                              : snapshot.data?.name ?? "");
+                                        },
+                                      ),
+                                      trailing: Container(
+                                        height: double.infinity,
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.end,
+                                          children: [
+                                            Text(
+                                              DateFormat("hh:mm").format(DateTime
+                                                  .fromMillisecondsSinceEpoch(
+                                                      message.timestamp)),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ).paddingOnly(
+                                    left: 15,
+                                    right: 15,
+                                  ),
+                                );
+                              },
+                            )
                           : Center(
-                        child: Text("No messages"),
-                      );
+                              child: Text("No messages"),
+                            );
                     })),
             Row(
               children: [
@@ -145,19 +184,23 @@ class ScreenGroupChat extends StatelessWidget {
                   child: Container(
                     margin: EdgeInsets.only(right: 10),
                     decoration: BoxDecoration(
-                        color: Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(width: 0.1, color: Colors.black)),
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(width: 0.1, color: Colors.black)),
                     child: Row(
                       children: [
                         IconButton(
                           onPressed: () {
-                            chatController.isEmojiVisible.value = !chatController.isEmojiVisible.value;
+                            chatController.isEmojiVisible.value =
+                                !chatController.isEmojiVisible.value;
                             chatController.focusNode.unfocus();
                             chatController.focusNode.canRequestFocus = true;
                           },
                           icon: Icon(Icons.emoji_emotions_rounded),
                           highlightColor: Colors.transparent,
                           // Set highlight color to transparent
-                          splashColor: Colors.transparent, // Set splash color to transparent
+                          splashColor: Colors
+                              .transparent, // Set splash color to transparent
                         ),
                         Expanded(
                           child: TextFormField(
@@ -177,7 +220,8 @@ class ScreenGroupChat extends StatelessWidget {
                           icon: Icon(Icons.camera_alt),
                           highlightColor: Colors.transparent,
                           // Set highlight color to transparent
-                          splashColor: Colors.transparent, // Set splash color to transparent
+                          splashColor: Colors
+                              .transparent, // Set splash color to transparent
                         ),
                       ],
                     ),
@@ -189,7 +233,8 @@ class ScreenGroupChat extends StatelessWidget {
                   splashColor: Colors.transparent,
                   mini: true,
                   onPressed: () async {
-                    chatController.sendMessage(chatController.textEditingController.text);
+                    chatController
+                        .sendMessage(chatController.textEditingController.text);
                   },
                   child: Icon(
                     Icons.send,
@@ -205,7 +250,9 @@ class ScreenGroupChat extends StatelessWidget {
                   height: 42.h,
                   child: EmojiPicker(
                     onEmojiSelected: (Category? category, Emoji emoji) {
-                      chatController.textEditingController.text = chatController.textEditingController.text + emoji.emoji;
+                      chatController.textEditingController.text =
+                          chatController.textEditingController.text +
+                              emoji.emoji;
                     },
                     // onBackspacePressed: () {},
                     config: Config(
@@ -245,6 +292,4 @@ class ScreenGroupChat extends StatelessWidget {
       ),
     );
   }
-
-
 }

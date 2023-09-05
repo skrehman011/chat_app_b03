@@ -1,4 +1,6 @@
+import 'package:app_links/app_links.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -36,7 +38,8 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     checkNotificationPermission();
-    initDynamicLinks();
+    // initDynamicLinks();
+    initAppLinks();
     super.initState();
   }
 
@@ -56,30 +59,70 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  Future<void> initDynamicLinks() async {
-    // Check if you received the link via `getInitialLink` first
-    final PendingDynamicLinkData? initialLink =
-        await FirebaseDynamicLinks.instance.getInitialLink();
+  // Future<void> initDynamicLinks() async {
+  //   // Check if you received the link via `getInitialLink` first
+  //   final PendingDynamicLinkData? initialLink =
+  //       await FirebaseDynamicLinks.instance.getInitialLink();
+  //
+  //   if (initialLink != null) {
+  //     final Uri deepLink = initialLink.link;
+  //     // Example of using the dynamic link to push the user to a different screen
+  //     processData(deepLink.path);
+  //   }
+  //
+  //   FirebaseDynamicLinks.instance.onLink.listen(
+  //     (pendingDynamicLinkData) {
+  //       // Set up the `onLink` event listener next as it may be received here
+  //       final Uri deepLink = pendingDynamicLinkData.link;
+  //       // Example of using the dynamic link to push the user to a different screen
+  //       processData(deepLink.path);
+  //     },
+  //   );
+  // }
 
-    if (initialLink != null) {
-      final Uri deepLink = initialLink.link;
-      // Example of using the dynamic link to push the user to a different screen
-      processData(deepLink.path);
-    }
+  void initAppLinks() {
+    final _appLinks = AppLinks();
 
-    FirebaseDynamicLinks.instance.onLink.listen(
-      (pendingDynamicLinkData) {
-        // Set up the `onLink` event listener next as it may be received here
-        final Uri deepLink = pendingDynamicLinkData.link;
-        // Example of using the dynamic link to push the user to a different screen
-        processData(deepLink.path);
-      },
-    );
+// Subscribe to all events when app is started.
+// (Use allStringLinkStream to get it as [String])
+
+    _appLinks.getInitialAppLink().then((uri) async {
+      if (uri != null) {
+        processData(uri);
+      }
+    });
+    _appLinks.allUriLinkStream.listen((uri) async {
+
+      processData(uri);
+
+    });
   }
 
-  void processData(String path) async {
+  Future<DataSnapshot?> processUrlAndGetGroupData(Uri uri) async {
+    if (currentUser == null) {
+      Get.to(ScreenLogIn());
+      return null;
+    }
+    var firebaseLinkData =
+        await FirebaseDynamicLinks.instance.getDynamicLink(uri);
+    var path = uri.path;
+
+    print("Data: ${firebaseLinkData}");
+
+    if (firebaseLinkData != null) {
+      var originalUri = firebaseLinkData.link;
+      print("Original Link: ${originalUri}");
+      print("Original Path: ${originalUri.path}");
+      path = originalUri.path;
+    }
     var groupId = path.replaceAll("/", "");
 
+    var data = await chatsRef.child(groupId.trim()).get();
+    return data;
+  }
+
+  void processData(Uri uri) async {
+    var groupId = uri.path;
     print('Group: $groupId');
 
     if (currentUser == null) {
@@ -89,25 +132,32 @@ class _MyAppState extends State<MyApp> {
 
     try {
       Get.bottomSheet(
-        Container(
-          color: Colors.white,
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                FutureBuilder(
-                    future: chatsRef.child(groupId.trim()).get(),
+        SingleChildScrollView(
+          child: Column(
+            children: [
+              Container(
+                padding: EdgeInsets.all(10),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                    color: Colors.white,
+
+                    borderRadius: BorderRadius.circular(20)
+                ),
+                child: FutureBuilder(
+                    future: processUrlAndGetGroupData(uri),
                     builder: (_, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return Center(
                           child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text("Checking group link"),
                               SizedBox(
                                 width: 10,
                               ),
                               Container(
-                                height: 30,
-                                width: 30,
+                                height: 20,
+                                width: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
                                 ),
@@ -117,8 +167,9 @@ class _MyAppState extends State<MyApp> {
                         );
                       }
 
-                      if (snapshot.data == null) {
-                        return Text("Invalid Data");
+                      if (snapshot.data?.value == null) {
+                        return Text(
+                            "Invalid Data (No group found for $groupId)");
                       }
 
                       var data = RoomInfo.fromMap(Map<String, dynamic>.from(
@@ -152,32 +203,35 @@ class _MyAppState extends State<MyApp> {
                                 ),
                               ),
                               if (!data.participants.contains(currentUser!.uid))
-                              Expanded(
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    chatsRef.child(data.id).update({
-                                      "participants": [
-                                        ...data.participants,
-                                        currentUser!.uid
-                                      ]
-                                    }).then((value) {
-
-                                      Get.back();
-                                      Get.put(HomeController()).setSelectedId(data.id);
-                                      Get.to(ScreenGroupChat());
-                                    });
-                                  },
-                                  child: Text("Join"),
+                                Expanded(
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      chatsRef.child(data.id).update({
+                                        "participants": [
+                                          ...data.participants,
+                                          currentUser!.uid
+                                        ]
+                                      }).then((value) {
+                                        Get.back();
+                                        Get.put(HomeController())
+                                            .setSelectedId(data.id);
+                                        Get.to(ScreenGroupChat());
+                                      });
+                                    },
+                                    child: Text("Join"),
+                                  ),
                                 ),
-                              ),
                             ],
                           )
                         ],
                       );
                     }),
-              ],
-            ),
+              ),
+            ],
           ),
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20)
         ),
         isScrollControlled: true,
         backgroundColor: Colors.white,

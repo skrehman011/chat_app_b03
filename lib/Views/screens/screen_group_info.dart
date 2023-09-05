@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:mondaytest/Models/Student.dart';
-import 'package:mondaytest/Models/group_info.dart';
 import 'package:mondaytest/Views/screens/screen_chat.dart';
 import 'package:mondaytest/Views/screens/screen_select_participants.dart';
 import 'package:mondaytest/controller/home_controller.dart';
@@ -26,11 +25,16 @@ class ScreenGroupInfo extends StatelessWidget {
                   width: Get.height * .1,
                   child: Center(child: Obx(() {
                     return Text(
-                      homeController.selectedRoomInfo.value!.name[0].toUpperCase(),
-                      style: TextStyle(fontSize: Get.height * .04, color: Colors.white, fontWeight: FontWeight.bold),
+                      homeController.selectedRoomInfo.value!.name[0]
+                          .toUpperCase(),
+                      style: TextStyle(
+                          fontSize: Get.height * .04,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold),
                     );
                   })),
-                  decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.pink),
+                  decoration:
+                      BoxDecoration(shape: BoxShape.circle, color: Colors.pink),
                 ),
                 SizedBox(
                   height: 10,
@@ -45,7 +49,8 @@ class ScreenGroupInfo extends StatelessWidget {
                   height: 5,
                 ),
                 Obx(() {
-                  return Text("Group | ${homeController.selectedRoomInfo.value!.participants.length} participants");
+                  return Text(
+                      "Group | ${homeController.selectedRoomInfo.value!.participants.length} participants");
                 }),
                 Divider(
                   height: 20,
@@ -59,18 +64,22 @@ class ScreenGroupInfo extends StatelessWidget {
                       ScreenSelectParticipants(
                         title: homeController.selectedRoomInfo.value!.name,
                         subtitle: "Update Participants",
-                        alreadySelected: homeController.selectedRoomInfo.value!.participants,
+                        alreadySelected:
+                            homeController.selectedRoomInfo.value!.participants,
                       ),
                     );
 
                     if (selected != null && selected.isNotEmpty) {
-                      var selectedStringList = selected.map((e) => e.id).toList();
+                      var selectedStringList =
+                          selected.map((e) => e.id).toList();
 
                       if (!selectedStringList.contains(currentUser!.uid)) {
                         selectedStringList.add(currentUser!.uid);
                       }
 
-                      chatsRef.child("${homeController.selectedRoomInfo.value!.id}").update({"participants": selectedStringList});
+                      chatsRef
+                          .child("${homeController.selectedRoomInfo.value!.id}")
+                          .update({"participants": selectedStringList});
                     }
                   },
                   leading: Container(
@@ -81,7 +90,8 @@ class ScreenGroupInfo extends StatelessWidget {
                       Icons.group,
                       color: Colors.white,
                     )),
-                    decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.pink),
+                    decoration: BoxDecoration(
+                        shape: BoxShape.circle, color: Colors.pink),
                   ),
                   title: Text(
                     "Add participant",
@@ -91,8 +101,14 @@ class ScreenGroupInfo extends StatelessWidget {
                 ListTile(
                   onTap: () async {
                     print('creating');
-                    var url = await buildDynamicLinks(homeController.selectedRoomInfo.value!.name, 'Group Description sample', '', homeController.selectedRoomInfo.value!.id, true);
-                    Share.share('Click here to join my WhatsApp Group:\n$url', subject: "Group invite link");
+                    var url = await buildDynamicLinks(
+                        homeController.selectedRoomInfo.value!.name,
+                        'Group Description sample',
+                        '',
+                        homeController.selectedRoomInfo.value!.id,
+                        true);
+                    Share.share('Click here to join my WhatsApp Group:\n$url',
+                        subject: "Group invite link");
                   },
                   leading: Container(
                     height: 40,
@@ -102,7 +118,8 @@ class ScreenGroupInfo extends StatelessWidget {
                       Icons.share,
                       color: Colors.white,
                     )),
-                    decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.pink),
+                    decoration: BoxDecoration(
+                        shape: BoxShape.circle, color: Colors.pink),
                   ),
                   title: Text(
                     "Invite Participants",
@@ -112,8 +129,16 @@ class ScreenGroupInfo extends StatelessWidget {
                 ListTile(
                   onTap: () async {
                     print('creating');
-                    var url = await buildDynamicLinks(homeController.selectedRoomInfo.value!.name, 'Group Description sample', '', homeController.selectedRoomInfo.value!.id, true);
-                    Clipboard.setData(ClipboardData(text: 'Click here to join my WhatsApp Group:\n$url')).then((value) {
+                    var url = await buildDynamicLinks(
+                        homeController.selectedRoomInfo.value!.name,
+                        'Group Description sample',
+                        '',
+                        homeController.selectedRoomInfo.value!.id,
+                        true);
+                    Clipboard.setData(ClipboardData(
+                            text:
+                                'Click here to join my WhatsApp Group:\n$url'))
+                        .then((value) {
                       Get.snackbar("Success", "Invite copied to clipboard");
                     });
                   },
@@ -125,7 +150,8 @@ class ScreenGroupInfo extends StatelessWidget {
                       Icons.copy,
                       color: Colors.white,
                     )),
-                    decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.pink),
+                    decoration: BoxDecoration(
+                        shape: BoxShape.circle, color: Colors.pink),
                   ),
                   title: Text(
                     "Copy to clipboard",
@@ -135,51 +161,65 @@ class ScreenGroupInfo extends StatelessWidget {
                 Divider(),
                 Obx(() {
                   var myId = currentUser!.uid;
-                  var adminId = homeController.selectedRoomInfo.value!.groupAdmin;
+                  var adminId =
+                      homeController.selectedRoomInfo.value!.groupAdmin;
 
-                  homeController.selectedRoomInfo.value!.participants.remove(myId);
-                  homeController.selectedRoomInfo.value!.participants.remove(adminId);
+                  homeController.selectedRoomInfo.value!.participants
+                      .remove(myId);
+                  homeController.selectedRoomInfo.value!.participants
+                      .remove(adminId);
 
-                  homeController.selectedRoomInfo.value!.participants.insert(0, myId);
+                  homeController.selectedRoomInfo.value!.participants
+                      .insert(0, myId);
                   if (adminId != myId) {
-                    homeController.selectedRoomInfo.value!.participants.insert(1, adminId);
+                    homeController.selectedRoomInfo.value!.participants
+                        .insert(1, adminId);
                   }
 
                   return ListView.builder(
-                    itemCount: homeController.selectedRoomInfo.value!.participants.length,
+                    itemCount: homeController
+                        .selectedRoomInfo.value!.participants.length,
                     shrinkWrap: true,
                     physics: NeverScrollableScrollPhysics(),
                     itemBuilder: (BuildContext context, int index) {
-                      var id = homeController.selectedRoomInfo.value!.participants[index];
+                      var id = homeController
+                          .selectedRoomInfo.value!.participants[index];
 
                       return FutureBuilder(
                         future: CachedData.getStudentById(id),
                         builder: (_, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
                             return SizedBox();
                           }
 
                           var student = snapshot.data!;
 
                           return ListTile(
-                            title: Text("${student.name}${student.id == myId ? " (You)" : ""}"),
+                            title: Text(
+                                "${student.name}${student.id == myId ? " (You)" : ""}"),
                             leading: Container(
                               height: 40,
                               width: 40,
                               child: Center(
                                   child: Text(
                                 student.name[0].toUpperCase(),
-                                style: TextStyle(fontSize: 20, color: Colors.white),
+                                style: TextStyle(
+                                    fontSize: 20, color: Colors.white),
                               )),
-                              decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.pink),
+                              decoration: BoxDecoration(
+                                  shape: BoxShape.circle, color: Colors.pink),
                             ),
-                            trailing: homeController.selectedRoomInfo.value!.groupAdmin == id
+                            trailing: homeController
+                                        .selectedRoomInfo.value!.groupAdmin ==
+                                    id
                                 ? Container(
                                     decoration: BoxDecoration(
                                         border: Border.all(
                                           color: Colors.green,
                                         ),
-                                        borderRadius: BorderRadius.circular(10)),
+                                        borderRadius:
+                                            BorderRadius.circular(10)),
                                     padding: EdgeInsets.all(5),
                                     child: Text(
                                       "Group Admin",

@@ -153,8 +153,8 @@ class _HomePageState extends State<HomePage> {
           name = userSnapshot.data?.name ?? "";
 
           return ListTile(
-            title: Text(name),
-            subtitle: item.lastMessage == null ? null : Text(item.lastMessage!.text),
+            title: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis,),
+            subtitle: item.lastMessage == null ? null : Text(item.lastMessage!.text, maxLines: 1, overflow: TextOverflow.ellipsis,),
             onTap: () {
               onClick();
               Get.to(
@@ -179,8 +179,8 @@ class _HomePageState extends State<HomePage> {
 
   Widget getGroupItem(RoomInfo item, {required VoidCallback onClick}) {
     return ListTile(
-      title: Text(item.name),
-      subtitle: item.lastMessage == null ? null : Text(item.lastMessage!.text),
+      title: Text(item.name, maxLines: 1, overflow: TextOverflow.ellipsis,),
+      subtitle: item.lastMessage == null ? null : Text(item.lastMessage!.text, maxLines: 1, overflow: TextOverflow.ellipsis,),
       onTap: () {
         onClick();
         Get.to(

@@ -24,6 +24,12 @@
                 <data
                     android:host="mychatapp1.page.link"
                     android:scheme="https"/>
+                <data
+                    android:host="mychatapp1.page.link"
+                    android:scheme="http"/>
+                <data
+                    android:host="chat"
+                    android:scheme="app"/>
             </intent-filter>
 
             <!-- Specifies an Android theme to apply to this Activity as soon as
