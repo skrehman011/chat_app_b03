@@ -8,6 +8,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:mondaytest/Models/group_info.dart';
 import 'package:mondaytest/Views/screens/screen_group_chat.dart';
+import 'package:mondaytest/Views/screens/screen_home.dart';
 import 'package:mondaytest/Views/screens/screen_log_in.dart';
 import 'package:mondaytest/controller/home_controller.dart';
 import 'package:mondaytest/helper/constants.dart';
@@ -50,7 +51,7 @@ class _MyAppState extends State<MyApp> {
       builder: (context, orientation, screenType) {
         return GetMaterialApp(
           debugShowCheckedModeBanner: false,
-          home: currentUser != null ? HomePage() : ScreenLogIn(),
+          home: currentUser != null ? ScreenHome() : ScreenLogIn(),
 
           // FirebaseAuth.instance.currentUser == null
           //     ? ScreenLogIn()

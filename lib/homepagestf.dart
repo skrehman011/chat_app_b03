@@ -37,68 +37,6 @@ class _HomePageState extends State<HomePage> {
     var homeController = Get.put(HomeController());
 
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(56.0),
-        child: AppBar(
-          backgroundColor: Color(0xFF075E54),
-          title: Row(
-            children: [
-              Container(
-                height: 40,
-                width: 40,
-                child: Center(
-                    child: Text(
-                  currentUser?.displayName?[0].toUpperCase() ?? "",
-                  style: TextStyle(fontSize: 20, color: Colors.white),
-                )),
-                decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.pink),
-              ),
-              SizedBox(width: 10),
-              Text(
-                'WhatsApp',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            IconButton(
-              onPressed: () {
-                // Add your custom logic for the search action
-              },
-              icon: Icon(
-                Icons.search,
-                color: Colors.white,
-              ),
-            ),
-            PopupMenuButton(
-              onSelected: (value) {
-                if (value == 'logout') {
-                  FirebaseAuth.instance.signOut().then((value) => Get.offAll(ScreenLogIn()));
-                }
-                // You can add more items and their corresponding actions here
-              },
-              itemBuilder: (BuildContext context) {
-                return [
-                  'Logout',
-                  'New group',
-                  'Setting',
-                  'Advertise',
-                  'Linked Device',
-                ].map((String option) {
-                  return PopupMenuItem<String>(
-                    value: option.toLowerCase(),
-                    child: Text(option),
-                  );
-                }).toList();
-              },
-            ),
-          ],
-          elevation: 0,
-        ),
-      ),
       body: Obx(() {
         return homeController.chatsList.isEmpty
             ? Center(
