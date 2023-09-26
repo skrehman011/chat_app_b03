@@ -4,7 +4,6 @@ import 'package:mondaytest/controller/new_group_controller.dart';
 import 'package:mondaytest/controller/participants_controller.dart';
 
 import '../../Models/Student.dart';
-import '../../helper/constants.dart';
 import '../../homepagestf.dart';
 
 class ScreenSelectParticipants extends StatelessWidget {

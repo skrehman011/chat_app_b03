@@ -42,6 +42,7 @@ class RegistrationController extends GetxController {
             lastSeen: DateTime.now().millisecondsSinceEpoch
         );
 
+        // FirebaseAuth.instance.currentUser!.updateDisplayName(name);
         currentUser!.updateDisplayName(name);
 
         FirebaseFirestore.instance
@@ -53,23 +54,23 @@ class RegistrationController extends GetxController {
         });
         Get.offAll(HomePage());
 
-        print(value.user!.email.toString());
+        // print(value.user!.email.toString());
       }).catchError((error) {
         Get.snackbar('Error', error.toString());
       });
     }
   }
 
-  void anonymousSignup() async {
-    FirebaseAuth.instance.signInAnonymously().then((value) async {
-      var token = await FCM.generateToken();
-
-      var user = UserModel(id: value.user!.uid, token: token ?? "");
-      usersRef.doc(user.id).set(user.toMap()).then((value) {
-        Get.offAll(HomePage());
-      });
-    });
-  }
+  // void anonymousSignup() async {
+  //   FirebaseAuth.instance.signInAnonymously().then((value) async {
+  //     var token = await FCM.generateToken();
+  //
+  //     var user = UserModel(id: value.user!.uid, token: token ?? "");
+  //     usersRef.doc(user.id).set(user.toMap()).then((value) {
+  //       Get.offAll(HomePage());
+  //     });
+  //   });
+  // }
 
   void Login() async {
     String email = emailcontroller.text.trim();

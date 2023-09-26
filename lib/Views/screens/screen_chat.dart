@@ -5,14 +5,12 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:mondaytest/Models/message_model.dart';
 import 'package:mondaytest/Views/screens/screen_image_view.dart';
-import 'package:mondaytest/Views/screens/stream%20builder/screen_image_view.dart';
 import 'package:mondaytest/controller/chat_controller.dart';
-import 'package:mondaytest/helper/Fcm.dart';
+import 'package:mondaytest/helper/constants.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 
 import '../../Models/Student.dart';
 import '../../controller/RegistrationController.dart';
-import '../../helper/constants.dart';
 
 class ScreenChat extends StatelessWidget {
   Student receiver;

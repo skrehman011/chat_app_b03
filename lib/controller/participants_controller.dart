@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
+import 'package:mondaytest/helper/constants.dart';
 
 import '../Models/Student.dart';
-import '../helper/constants.dart';
 
 class ParticipantsController extends GetxController {
   RxList<Student> studentsList = RxList([]);

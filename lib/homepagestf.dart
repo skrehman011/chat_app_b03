@@ -1,13 +1,9 @@
 import 'dart:async';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mondaytest/Models/group_info.dart';
 import 'package:mondaytest/Models/message_model.dart';
-import 'package:mondaytest/Models/user_model.dart';
 import 'package:mondaytest/Views/screens/screen_all_users.dart';
 import 'package:mondaytest/Views/screens/screen_chat.dart';
 import 'package:mondaytest/Views/screens/screen_group_chat.dart';
@@ -17,8 +13,9 @@ import 'package:mondaytest/helper/Fcm.dart';
 import 'package:mondaytest/helper/cached_data.dart';
 import 'package:mondaytest/helper/constants.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
-
 import 'Models/Student.dart';
+
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -112,10 +109,10 @@ class _HomePageState extends State<HomePage> {
                 itemBuilder: (BuildContext context, int index) {
                   var item = homeController.chatsList[index];
                   return item.roomType == 'group'
-                      ? getGroupItem(item, onClick: () {
+                      ? getGroupItem(item as RoomInfo, onClick: () {
                           homeController.setSelectedId(item.id);
                         })
-                      : getUserItem(item, onClick: () {
+                      : getUserItem(item as RoomInfo, onClick: () {
                     homeController.setSelectedId(item.id);
                   });
                 },
