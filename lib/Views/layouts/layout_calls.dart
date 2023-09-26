@@ -49,10 +49,10 @@ class LayoutCalls extends StatelessWidget {
                 ),
                 child: CircleAvatar(),
               ),
-              title: Text('Create Call Link', style: TextStyle(
+              title: Text('User Name', style: TextStyle(
                   color: Colors.black,
                   fontSize: 14,
-                  fontWeight: FontWeight.w400
+                  fontWeight: FontWeight.w500
               ),),
               subtitle: Row(
                 children: [
@@ -76,10 +76,10 @@ class LayoutCalls extends StatelessWidget {
                 ),
                 child: CircleAvatar(),
               ),
-              title: Text('Create Call Link', style: TextStyle(
+              title: Text('user name', style: TextStyle(
                   color: Colors.black,
                   fontSize: 14,
-                  fontWeight: FontWeight.w400
+                  fontWeight: FontWeight.w500
               ),),
               subtitle: Row(
                 children: [
@@ -95,7 +95,15 @@ class LayoutCalls extends StatelessWidget {
             ),
           ],
         ),
-      )
+      ),
+      floatingActionButton:FloatingActionButton(
+        onPressed: () {
+
+        },
+        backgroundColor: Color(0xFF075e55),
+        child: Icon(Icons.add_call, ),
+      ),
+
     );
   }
 }

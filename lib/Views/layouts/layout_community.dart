@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class LayoutCamera extends StatelessWidget {
-  const LayoutCamera({Key? key}) : super(key: key);
+class LayoutCommunity extends StatelessWidget {
+  const LayoutCommunity({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

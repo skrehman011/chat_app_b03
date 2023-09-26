@@ -45,6 +45,19 @@ class ScreenChat extends StatelessWidget {
           },
           icon: Icon(Icons.arrow_back, color: Colors.black),
         ),
+        actions: [
+          Container(
+            width: Get.width*.3,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Icon(Icons.missed_video_call_rounded, color: Colors.black, size: 32,),
+                Icon(Icons.call, color: Colors.black,),
+                Icon(Icons.more_vert, color: Colors.black,)
+              ],
+            ),
+          )
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.only(top: 20, bottom: 10),

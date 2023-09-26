@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:mondaytest/Views/layouts/layout_calls.dart';
-import 'package:mondaytest/Views/layouts/layout_camera.dart';
+import 'package:mondaytest/Views/layouts/layout_community.dart';
 import 'package:mondaytest/Views/screens/screen_log_in.dart';
 import 'package:mondaytest/Views/layouts/screen_status.dart';
 import 'package:mondaytest/homepagestf.dart';
@@ -64,8 +64,11 @@ class ScreenHome extends StatelessWidget {
               bottom: PreferredSize(
                 preferredSize: Size.fromHeight(60),
                 child: TabBar(
+                  indicatorColor: Colors.white,
+                    indicatorWeight: 3,
+
                     tabs: [
-                      Tab( icon: Icon(Icons.camera_alt_outlined),),
+                      Tab( icon: Icon(Icons.groups),),
                       Tab( text: 'Chat',),
                       Tab(  text: 'Status',),
                       Tab( text: 'Calls',),
@@ -75,7 +78,7 @@ class ScreenHome extends StatelessWidget {
           ],
           body: TabBarView(
               children: [
-                LayoutCamera(),
+                LayoutCommunity(),
                 HomePage(),
                 ScreenStatus(),
                 LayoutCalls(),
