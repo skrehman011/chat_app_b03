@@ -11,7 +11,7 @@ class MessageModel {
     required this.sender_id,
     required this.receiver_id,
     required this.timestamp,
-    this.message_type = "text",
+    this.message_type = "",
   });
 
 //tex@override

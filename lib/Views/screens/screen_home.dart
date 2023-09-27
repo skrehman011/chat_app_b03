@@ -39,6 +39,9 @@ class ScreenHome extends StatelessWidget {
                           if (value == 'logout') {
                             FirebaseAuth.instance.signOut().then((value) => Get.offAll(ScreenLogIn()));
                           }
+                          if (value == 'New group') {
+                             Get.offAll(ScreenLogIn());
+                          }
                           // You can add more items and their corresponding actions here
                         },
                         itemBuilder: (BuildContext context) {

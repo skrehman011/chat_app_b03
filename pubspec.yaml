@@ -55,6 +55,9 @@ dependencies:
   app_links: ^3.4.3
   flutter_linkify: ^6.0.0
   url_launcher: ^6.1.14
+  record: ^4.4.4
+  audioplayers: ^5.1.0
+  audio_waveforms: ^1.0.4
 
 dev_dependencies:
   flutter_test:

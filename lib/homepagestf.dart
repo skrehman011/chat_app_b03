@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mondaytest/Models/group_info.dart';
@@ -7,15 +7,13 @@ import 'package:mondaytest/Models/message_model.dart';
 import 'package:mondaytest/Views/screens/screen_all_users.dart';
 import 'package:mondaytest/Views/screens/screen_chat.dart';
 import 'package:mondaytest/Views/screens/screen_group_chat.dart';
-import 'package:mondaytest/Views/screens/screen_log_in.dart';
 import 'package:mondaytest/controller/home_controller.dart';
 import 'package:mondaytest/helper/Fcm.dart';
 import 'package:mondaytest/helper/cached_data.dart';
 import 'package:mondaytest/helper/constants.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
+
 import 'Models/Student.dart';
-
-
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -35,6 +33,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     var homeController = Get.put(HomeController());
+    homeController.startChatStream();
 
     return Scaffold(
       body: Obx(() {
@@ -51,8 +50,8 @@ class _HomePageState extends State<HomePage> {
                           homeController.setSelectedId(item.id);
                         })
                       : getUserItem(item as RoomInfo, onClick: () {
-                    homeController.setSelectedId(item.id);
-                  });
+                          homeController.setSelectedId(item.id);
+                        });
                 },
               );
       }),
@@ -88,8 +87,18 @@ class _HomePageState extends State<HomePage> {
           name = userSnapshot.data?.name ?? "";
 
           return ListTile(
-            title: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis,),
-            subtitle: item.lastMessage == null ? null : Text(item.lastMessage!.text, maxLines: 1, overflow: TextOverflow.ellipsis,),
+            title: Text(
+              name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            subtitle: item.lastMessage == null
+                ? null
+                : Text(
+                    item.lastMessage!.text,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
             onTap: () {
               onClick();
               Get.to(
@@ -106,7 +115,8 @@ class _HomePageState extends State<HomePage> {
                 name[0].toUpperCase(),
                 style: TextStyle(fontSize: 20, color: Colors.white),
               )),
-              decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.pink),
+              decoration:
+                  BoxDecoration(shape: BoxShape.circle, color: Colors.pink),
             ),
           );
         });
@@ -114,8 +124,18 @@ class _HomePageState extends State<HomePage> {
 
   Widget getGroupItem(RoomInfo item, {required VoidCallback onClick}) {
     return ListTile(
-      title: Text(item.name, maxLines: 1, overflow: TextOverflow.ellipsis,),
-      subtitle: item.lastMessage == null ? null : Text(item.lastMessage!.text, maxLines: 1, overflow: TextOverflow.ellipsis,),
+      title: Text(
+        item.name,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      subtitle: item.lastMessage == null
+          ? null
+          : Text(
+              item.lastMessage!.text,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
       onTap: () {
         onClick();
         Get.to(
@@ -142,7 +162,9 @@ class _HomePageState extends State<HomePage> {
 
   void startLastSeenUpdates() {
     Timer.periodic(Duration(seconds: 10), (timer) {
-      usersRef.doc(currentUser!.uid).update({'lastSeen': DateTime.now().millisecondsSinceEpoch});
+      usersRef
+          .doc(currentUser!.uid)
+          .update({'lastSeen': DateTime.now().millisecondsSinceEpoch});
     });
   }
 }

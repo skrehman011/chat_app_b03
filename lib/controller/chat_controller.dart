@@ -1,6 +1,9 @@
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:record/record.dart';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -110,5 +113,55 @@ class ChatController extends GetxController {
       'name': 'Name',
       'roomType': 'chat'
     });
+  }
+  late AudioPlayer audioPlayer;
+  late Record audioRecording;
+  bool isRecording = false;
+  String audioPath = '';
+  Timer? recordingTimer;
+  int secondsElapsed = 0;
+  Future<void> startRecording() async {
+    try {
+      if (await audioRecording.hasPermission()) {
+        await audioRecording.start();
+        update();
+        isRecording = true;
+
+        // Start the recording timer
+        recordingTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+          update();
+          secondsElapsed += 1;
+        });
+      }
+    } catch (e) {
+      print('Error in recording audio, $e');
+    }
+  }
+
+  Future<void> stopRecording() async {
+    try {
+      String? path = await audioRecording.stop();
+     update();
+      isRecording = false;
+      audioPath = path!;
+      recordingTimer?.cancel();
+      secondsElapsed = 0;
+      var url=await FirebaseStorageUtils.uploadImage(File(path.toString()), path, "");
+      sendMessage(url,type: "voice");
+
+
+    } catch (e) {
+      print('error in stop recording, $e');
+    }
+  }
+
+  Future<void> playRecording() async {
+    try {
+      Source sourceUrl = UrlSource(audioPath);
+      await audioPlayer.play(sourceUrl);
+    }
+    catch (e) {
+      print('error in play recording, $e');
+    }
   }
 }

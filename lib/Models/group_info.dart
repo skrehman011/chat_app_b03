@@ -7,7 +7,7 @@ class RoomInfo {
   MessageModel? lastMessage;
   List<String> participants;
   String groupAdmin;
-  String roomType;
+  String roomType; //group, chat
 
 //<editor-fold desc="Data Methods">
 
@@ -87,21 +87,26 @@ class RoomInfo {
     };
   }
 
+
+
   factory RoomInfo.fromMap(Map<String, dynamic> map) {
     return RoomInfo(
-      id: map['id'] as String,
-      name: map['name'] as String,
-      lastMessage: map['lastMessage'] as MessageModel,
-      participants: map['participants'] as List<String>,
-      groupAdmin: map['groupAdmin'] as String,
-      roomType: map['roomType'] as String,
+        id: map['id'] as String,
+        name: map['name'] as String,
+        lastMessage: getMessageModel(map['lastMessage'] as String?),
+        participants: (map['participants'] as List<dynamic>)
+            .map((e) => e.toString())
+            .toList(),
+        roomType: map['roomType'] as String,
+        groupAdmin: map['groupAdmin'] as String? ?? ""
     );
   }
+}
 
+MessageModel? getMessageModel(String? data) {
+  if (data == null) {
+    return null;
+  }
 
-  //</editor-fold>
-
-
-//<editor-fold desc="Data Methods">
-
+  return MessageModel.fromMap(jsonDecode(data) as Map<String, dynamic>);
 }
