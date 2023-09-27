@@ -39,7 +39,7 @@ class _HomePageState extends State<HomePage> {
       body: Obx(() {
         return homeController.chatsList.isEmpty
             ? Center(
-                child: Text("No chats"),
+                child: Text("No chats available"),
               )
             : ListView.builder(
                 itemCount: homeController.chatsList.length,
