@@ -26,6 +26,8 @@ class ChatController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    audioPlayer = AudioPlayer();
+    audioRecording = Record();
     focusNode.addListener(() {
       if (focusNode.hasFocus) {
         isEmojiVisible.value = false;
@@ -39,6 +41,8 @@ class ChatController extends GetxController {
   @override
   void onClose() {
     super.onClose();
+    // audioPlayer.dispose();
+    // audioRecording.dispose();
     textEditingController.dispose();
   }
 
@@ -116,7 +120,7 @@ class ChatController extends GetxController {
   }
   late AudioPlayer audioPlayer;
   late Record audioRecording;
-  bool isRecording = false;
+  RxBool isRecording = false.obs;
   String audioPath = '';
   Timer? recordingTimer;
   int secondsElapsed = 0;
@@ -125,7 +129,7 @@ class ChatController extends GetxController {
       if (await audioRecording.hasPermission()) {
         await audioRecording.start();
         update();
-        isRecording = true;
+        isRecording.value = true;
 
         // Start the recording timer
         recordingTimer = Timer.periodic(Duration(seconds: 1), (timer) {
@@ -141,8 +145,8 @@ class ChatController extends GetxController {
   Future<void> stopRecording() async {
     try {
       String? path = await audioRecording.stop();
-     update();
-      isRecording = false;
+      update();
+      isRecording.value = false;
       audioPath = path!;
       recordingTimer?.cancel();
       secondsElapsed = 0;
@@ -155,9 +159,9 @@ class ChatController extends GetxController {
     }
   }
 
-  Future<void> playRecording() async {
+  Future<void> playRecording(String url) async {
     try {
-      Source sourceUrl = UrlSource(audioPath);
+      Source sourceUrl = UrlSource(url);
       await audioPlayer.play(sourceUrl);
     }
     catch (e) {

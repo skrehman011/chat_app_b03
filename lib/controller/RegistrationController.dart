@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:mondaytest/Models/user_model.dart';
+import 'package:mondaytest/Views/screens/screen_home.dart';
 import 'package:mondaytest/helper/constants.dart';
 import 'package:mondaytest/homepagestf.dart';
 
@@ -52,7 +53,7 @@ class RegistrationController extends GetxController {
             .then((value) {
           Get.snackbar('Alert', 'Successfully Data Stored');
         });
-        Get.offAll(HomePage());
+        Get.offAll(ScreenHome());
 
         // print(value.user!.email.toString());
       }).catchError((error) {
@@ -90,7 +91,7 @@ class RegistrationController extends GetxController {
         var obj = Student.fromMap(myDoc.data()!);
         currentUser!.updateDisplayName(obj.name);
 
-        Get.offAll(HomePage());
+        Get.offAll(ScreenHome());
         print(value.user!.email.toString());
       }).catchError((error) {
         Get.snackbar('error', error.toString());

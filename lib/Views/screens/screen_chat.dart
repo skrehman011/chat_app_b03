@@ -1,8 +1,3 @@
-import 'dart:async';
-import 'dart:io';
-
-import 'package:audio_waveforms/audio_waveforms.dart';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -11,79 +6,25 @@ import 'package:intl/intl.dart';
 import 'package:mondaytest/Models/message_model.dart';
 import 'package:mondaytest/Views/screens/screen_image_view.dart';
 import 'package:mondaytest/controller/chat_controller.dart';
-import 'package:mondaytest/controller/grop_chat_controller.dart';
 import 'package:mondaytest/helper/constants.dart';
-import 'package:mondaytest/helper/firebase_helpers.dart';
-import 'package:record/record.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 
 import '../../Models/Student.dart';
-import '../../controller/RegistrationController.dart';
 
-class ScreenChat extends StatefulWidget {
+class ScreenChat extends StatelessWidget {
   Student receiver;
-
-
-  @override
-  State<ScreenChat> createState() => _ScreenChatState();
-
-
-
-
-
-  ScreenChat({
-  required this.receiver,
-  });
-}
-
-class _ScreenChatState extends State<ScreenChat> {
-
-   // GroupChatController groupChatController = Get.put(GroupChatController(group_id: ''));
-  RecorderController controller = RecorderController(); // Initialise
-
-
-
-  late AudioPlayer audioPlayer;
-  late Record audioRecording;
-  bool isRecording = false;
-  String audioPath = '';
-  Timer? recordingTimer;
-  int secondsElapsed = 0;
-
-
-
-
-
-  @override
-  void initState() {
-    audioPlayer = AudioPlayer();
-    audioRecording = Record();
-    super.initState();
-  }
-
-
-  @override
-  void dispose() {
-    audioPlayer.dispose();
-    audioRecording.dispose();
-    super.dispose();
-  }
-
-
-
-
 
   @override
   Widget build(BuildContext context) {
     ChatController chatController =
-    Get.put(ChatController(receiver_id: widget.receiver.id));
+    Get.put(ChatController(receiver_id: receiver.id));
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
         title: ListTile(
           title: Text(
-            widget.receiver.name,
+            receiver.name,
             style: TextStyle(
                 color: Colors.black,
                 fontSize: 18.sp,
@@ -103,20 +44,6 @@ class _ScreenChatState extends State<ScreenChat> {
           },
           icon: Icon(Icons.arrow_back, color: Colors.black),
         ),
-        actions: [
-          Container(
-            width: Get.width * .3,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Icon(Icons.missed_video_call_rounded, color: Colors.black,
-                  size: 32,),
-                Icon(Icons.call, color: Colors.black,),
-                Icon(Icons.more_vert, color: Colors.black,)
-              ],
-            ),
-          )
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.only(top: 20, bottom: 10),
@@ -127,7 +54,7 @@ class _ScreenChatState extends State<ScreenChat> {
                   child: StreamBuilder<DatabaseEvent>(
                       stream: chatsRef
                           .child(chatController.getRoomId(
-                          widget.receiver.id, currentUser!.uid))
+                          receiver.id, currentUser!.uid))
                           .child("messages")
                           .onValue,
                       builder: (context, snapshot) {
@@ -147,9 +74,8 @@ class _ScreenChatState extends State<ScreenChat> {
                         }
 
                         List<MessageModel> messages = data.snapshot.children
-                            .map((e) =>
-                            MessageModel.fromMap(
-                                Map<String, dynamic>.from(e.value as Map)))
+                            .map((e) => MessageModel.fromMap(
+                            Map<String, dynamic>.from(e.value as Map)))
                             .toList();
 
                         return messages.isNotEmpty
@@ -198,7 +124,9 @@ class _ScreenChatState extends State<ScreenChat> {
                                 child: ListTile(
                                   title: message.message_type == 'text'
                                       ? Text(message.text)
-                                      : GestureDetector(
+                                      : message.message_type =="voice"?IconButton(onPressed: (){
+                                    chatController.playRecording(message.text);
+                                  }, icon: Icon(Icons.play_arrow)):GestureDetector(
                                     onTap: () {
                                       Get.to(ScreenImageView(
                                           url: message.text));
@@ -210,7 +138,7 @@ class _ScreenChatState extends State<ScreenChat> {
                                   subtitle: Text(message.sender_id ==
                                       currentUser!.uid
                                       ? "You"
-                                      : widget.receiver.name),
+                                      : receiver.name),
                                   trailing: Column(
                                     mainAxisAlignment:
                                     MainAxisAlignment.end,
@@ -237,7 +165,6 @@ class _ScreenChatState extends State<ScreenChat> {
                           child: Text("No messages"),
                         );
                       })),
-
               Row(
                 children: [
                   Expanded(
@@ -264,6 +191,10 @@ class _ScreenChatState extends State<ScreenChat> {
                           ),
                           Expanded(
                             child: TextFormField(
+                              onChanged: (value) {
+                                chatController.textEditingController.text =
+                                    value;
+                              },
                               focusNode: chatController.focusNode,
                               decoration: InputDecoration(
                                 hintText: "Write message here...",
@@ -287,62 +218,47 @@ class _ScreenChatState extends State<ScreenChat> {
                       ),
                     ),
                   ),
+                  Obx(() {
+                    return (chatController.textEditingController.text.isNotEmpty)?FloatingActionButton(
+                        highlightElevation: 0,
+                        // Set highlight elevation to 0
+                        splashColor: Colors.transparent,
+                        mini: true,
+                        onPressed: () async {
+                          String message =
+                              chatController.textEditingController.value.text;
+                          if (message.isNotEmpty) {
+                            chatController.sendMessage(
+                                chatController.textEditingController.value.text);
+                          } else {
+                            chatController.startRecording();
+                          }
+                        },
+                        child: Icon(
+                          Icons.send,
+                          size: 22,
+                        )):
+                    chatController.isRecording.value?
+                    FloatingActionButton(
+                        highlightElevation: 0,
+                        // Set highlight elevation to 0
+                        splashColor: Colors.transparent,
+                        mini: true,
+                        onPressed: () async {
+                          chatController.stopRecording();
+                        },
+                        child: Icon(Icons.stop)):
+                    FloatingActionButton(
+                        highlightElevation: 0,
+                        // Set highlight elevation to 0
+                        splashColor: Colors.transparent,
+                        mini: true,
+                        onPressed: () async {
+                          chatController.startRecording();
 
-                  GestureDetector(
-                    // onLongPress: () {
-                    //   showModalBottomSheet(
-                    //     context: context,
-                    //     builder: (BuildContext context) {
-                    //       return StatefulBuilder(
-                    //         builder: (BuildContext context, StateSetter setState) {
-                    //           return Container(
-                    //             padding: EdgeInsets.all(16.0),
-                    //             height: 300.0, // Customize the height as needed
-                    //             child: Column(
-                    //               mainAxisAlignment: MainAxisAlignment.center,
-                    //               children: [
-                    //                 if(isRecording)
-                    //                   Text('Recording in Progress'),
-                    //                 SizedBox(height: 10,),
-                    //                 Row(
-                    //                   children: [
-                    //                     Divider(
-                    //                       color: Colors.grey,
-                    //                       thickness: 4,
-                    //                     ),
-                    //                     FloatingActionButton(
-                    //                         highlightElevation: 0,
-                    //                         splashColor: Colors.transparent,
-                    //                         mini: true,
-                    //                         onPressed: () async {
-                    //                           chatController.sendMessage(chatController.textEditingController.text);
-                    //                         },
-                    //                         child:  isRecording ? Icon(Icons.mic, size: 22): Icon(Icons.send, size: 22)
-                    //                     ),
-                    //                   ],
-                    //                 ),
-                    //                 Text('00:00')
-                    //               ],
-                    //             ),
-                    //           );
-                    //         },
-                    //       );
-                    //     },
-                    //   );
-                    // },
-                    onLongPress: isRecording ? chatController.stopRecording : chatController.startRecording,
-                    child: FloatingActionButton(
-                      highlightElevation: 0,
-                      splashColor: Colors.transparent,
-                      mini: true,
-                      onPressed: () async {
-                        chatController.sendMessage(chatController.textEditingController.text);
-                      },
-                      child: Icon(Icons.send, size: 22)
-                    ),
-                  ),
-
-
+                        },
+                        child: Icon(Icons.mic));
+                  }),
                 ],
               ).paddingOnly(left: 10, right: 10),
               Obx(() {
@@ -353,7 +269,7 @@ class _ScreenChatState extends State<ScreenChat> {
                     child: EmojiPicker(
                       onEmojiSelected: (Category? category, Emoji emoji) {
                         chatController.textEditingController.text =
-                            chatController.textEditingController.text +
+                            chatController.textEditingController.value.text +
                                 emoji.emoji;
                       },
                       // onBackspacePressed: () {},
@@ -404,6 +320,10 @@ class _ScreenChatState extends State<ScreenChat> {
     );
   }
 
+  ScreenChat({
+    required this.receiver,
+  });
+
   String formatRelativeTime(int millisecondsSinceEpoch) {
     final now = DateTime.now();
     final timestamp =
@@ -434,6 +354,4 @@ class _ScreenChatState extends State<ScreenChat> {
       return '$years years ago';
     }
   }
-
-
 }
