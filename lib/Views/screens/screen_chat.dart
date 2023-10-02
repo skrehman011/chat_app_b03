@@ -1,13 +1,18 @@
+import 'dart:io';
+
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:mondaytest/Models/message_model.dart';
 import 'package:mondaytest/Views/screens/screen_image_view.dart';
+import 'package:mondaytest/Views/screens/screen_video_perview.dart';
 import 'package:mondaytest/controller/chat_controller.dart';
 import 'package:mondaytest/helper/constants.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
+import 'package:video_player/video_player.dart';
 
 import '../../Models/Student.dart';
 
@@ -17,7 +22,7 @@ class ScreenChat extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ChatController chatController =
-    Get.put(ChatController(receiver_id: receiver.id));
+    Get.put(ChatController(receiver_id: receiver.id,));
 
     return Scaffold(
       appBar: AppBar(
@@ -209,6 +214,17 @@ class ScreenChat extends StatelessWidget {
                               chatController.pickImage();
                             },
                             icon: Icon(Icons.camera_alt),
+                            highlightColor: Colors.transparent,
+                            // Set highlight color to transparent
+                            splashColor: Colors
+                                .transparent, // Set splash color to transparent
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              chatController.pickVideo(ImageSource.gallery);
+                              Get.to(ScreenVideoPerview(receiver: receiver,));
+                            },
+                            icon: Icon(Icons.video_library_rounded),
                             highlightColor: Colors.transparent,
                             // Set highlight color to transparent
                             splashColor: Colors

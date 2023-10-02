@@ -10,6 +10,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mondaytest/helper/constants.dart';
 import 'package:mondaytest/helper/firebase_helpers.dart';
+import 'package:video_player/video_player.dart';
 
 import '../Models/Student.dart';
 import '../Models/message_model.dart';
@@ -22,6 +23,7 @@ class ChatController extends GetxController {
   var textEditingController = TextEditingController();
   String receiver_id;
   Rx<Student?> receiverObservable = Rx(null);
+  RxString videoPath = "".obs;
 
   @override
   void onInit() {
@@ -46,8 +48,10 @@ class ChatController extends GetxController {
     textEditingController.dispose();
   }
 
+
   ChatController({
     required this.receiver_id,
+
   });
 
   void startReceiverStream() {
@@ -66,7 +70,7 @@ class ChatController extends GetxController {
     if (text.isNotEmpty) {
       FCM.sendMessageSingle(
         currentUser!.displayName ?? "New Message",
-        type == 'text' ? text : 'image',
+        type == 'text' ? text : (type == 'image' ? 'image' : 'video'),
         receiverObservable.value?.token ?? "",
         {},
       );
@@ -109,6 +113,27 @@ class ChatController extends GetxController {
     }
   }
 
+
+
+  Future<void> pickVideo( ImageSource type) async {
+    final picker = ImagePicker();
+    final pickedVideo = await picker.pickVideo(source: type );
+    videoPath.value = pickedVideo!.path;
+    // if (pickedVideo != null) {
+    //   // videoController = VideoPlayerController.file(File(pickedVideo.path))
+    //   // ..initialize().then((_){
+    //   // });
+    // }
+
+  }
+
+
+
+
+
+
+
+
   void updateParticipants() async {
     var id = getRoomId(currentUser!.uid, receiver_id);
     chatsRef.child(id).update({
@@ -118,12 +143,25 @@ class ChatController extends GetxController {
       'roomType': 'chat'
     });
   }
+
+
+
+
+
+
+
+
+  // audio work
+
+
   late AudioPlayer audioPlayer;
   late Record audioRecording;
   RxBool isRecording = false.obs;
   String audioPath = '';
   Timer? recordingTimer;
   int secondsElapsed = 0;
+
+
   Future<void> startRecording() async {
     try {
       if (await audioRecording.hasPermission()) {
