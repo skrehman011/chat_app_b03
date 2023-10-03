@@ -1,8 +1,10 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:mondaytest/Models/user_model.dart';
 import 'package:record/record.dart';
 
 import 'package:flutter/material.dart';
@@ -14,6 +16,7 @@ import 'package:video_player/video_player.dart';
 
 import '../Models/Student.dart';
 import '../Models/message_model.dart';
+import '../Views/screens/screen_video_perview.dart';
 import '../helper/Fcm.dart';
 
 class ChatController extends GetxController {
@@ -115,9 +118,12 @@ class ChatController extends GetxController {
 
 
 
-  Future<void> pickVideo( ImageSource type) async {
+  Future<void> pickVideo( Student reciver ,ImageSource type) async {
     final picker = ImagePicker();
-    final pickedVideo = await picker.pickVideo(source: type );
+    final pickedVideo = await picker.pickVideo(source: type ).then((value) {
+      log("path :${value!.path.toString()}");
+      Get.to(ScreenVideoPerview(path: value!.path.toString(),receiver: reciver,));
+    });
     videoPath.value = pickedVideo!.path;
     // if (pickedVideo != null) {
     //   // videoController = VideoPlayerController.file(File(pickedVideo.path))
@@ -126,6 +132,8 @@ class ChatController extends GetxController {
     // }
 
   }
+
+
 
 
 

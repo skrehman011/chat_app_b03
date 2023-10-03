@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +6,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:mondaytest/Models/message_model.dart';
 import 'package:mondaytest/Views/screens/screen_image_view.dart';
-import 'package:mondaytest/Views/screens/screen_video_perview.dart';
 import 'package:mondaytest/controller/chat_controller.dart';
 import 'package:mondaytest/helper/constants.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
@@ -21,8 +18,9 @@ class ScreenChat extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    ChatController chatController =
-    Get.put(ChatController(receiver_id: receiver.id,));
+    ChatController chatController = Get.put(ChatController(
+      receiver_id: receiver.id,
+    ));
 
     return Scaffold(
       appBar: AppBar(
@@ -59,7 +57,7 @@ class ScreenChat extends StatelessWidget {
                   child: StreamBuilder<DatabaseEvent>(
                       stream: chatsRef
                           .child(chatController.getRoomId(
-                          receiver.id, currentUser!.uid))
+                              receiver.id, currentUser!.uid))
                           .child("messages")
                           .onValue,
                       builder: (context, snapshot) {
@@ -80,95 +78,139 @@ class ScreenChat extends StatelessWidget {
 
                         List<MessageModel> messages = data.snapshot.children
                             .map((e) => MessageModel.fromMap(
-                            Map<String, dynamic>.from(e.value as Map)))
+                                Map<String, dynamic>.from(e.value as Map)))
                             .toList();
 
                         return messages.isNotEmpty
                             ? ListView.builder(
-                          itemCount: messages.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            var message = messages[index];
+                                itemCount: messages.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  var message = messages[index];
 
-                            return Align(
-                              alignment:
-                              message.sender_id == currentUser!.uid
-                                  ? Alignment.centerRight
-                                  : Alignment.centerLeft,
-                              child: Container(
-                                padding: EdgeInsets.only(
-                                    bottom: 5,
-                                    top: 5,
-                                    left: 10,
-                                    right: 5),
-                                margin: EdgeInsets.only(bottom: 10),
-                                width: Device.width * .67,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.only(
-                                    topRight: message.sender_id ==
-                                        currentUser!.uid
-                                        ? Radius.circular(0)
-                                        : Radius.circular(20),
-                                    topLeft: message.sender_id ==
-                                        currentUser!.uid
-                                        ? Radius.circular(20)
-                                        : Radius.circular(0),
-                                    bottomLeft: message.sender_id ==
-                                        currentUser!.uid
-                                        ? Radius.circular(0)
-                                        : Radius.circular(20),
-                                    bottomRight: message.sender_id ==
-                                        currentUser!.uid
-                                        ? Radius.circular(20)
-                                        : Radius.circular(0),
-                                  ),
-                                  color: message.sender_id ==
-                                      currentUser!.uid
-                                      ? Colors.greenAccent.withOpacity(.7)
-                                      : Colors.grey.withOpacity(.3),
-                                ),
-                                child: ListTile(
-                                  title: message.message_type == 'text'
-                                      ? Text(message.text)
-                                      : message.message_type =="voice"?IconButton(onPressed: (){
-                                    chatController.playRecording(message.text);
-                                  }, icon: Icon(Icons.play_arrow)):GestureDetector(
-                                    onTap: () {
-                                      Get.to(ScreenImageView(
-                                          url: message.text));
-                                    },
-                                    child: Image.network(
-                                      message.text,
-                                    ),
-                                  ),
-                                  subtitle: Text(message.sender_id ==
-                                      currentUser!.uid
-                                      ? "You"
-                                      : receiver.name),
-                                  trailing: Column(
-                                    mainAxisAlignment:
-                                    MainAxisAlignment.end,
-                                    crossAxisAlignment:
-                                    CrossAxisAlignment.end,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        DateFormat("hh:mm").format(DateTime
-                                            .fromMillisecondsSinceEpoch(
-                                            message.timestamp)),
+                                  return Align(
+                                    alignment:
+                                        message.sender_id == currentUser!.uid
+                                            ? Alignment.centerRight
+                                            : Alignment.centerLeft,
+                                    child: Container(
+                                      padding: EdgeInsets.only(
+                                          bottom: 5,
+                                          top: 5,
+                                          left: 10,
+                                          right: 5),
+                                      margin: EdgeInsets.only(bottom: 10),
+                                      width: Device.width * .67,
+                                      height: message.message_type == "video"
+                                          ? Get.height * .2
+                                          : null,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.only(
+                                          topRight: message.sender_id ==
+                                                  currentUser!.uid
+                                              ? Radius.circular(0)
+                                              : Radius.circular(20),
+                                          topLeft: message.sender_id ==
+                                                  currentUser!.uid
+                                              ? Radius.circular(20)
+                                              : Radius.circular(0),
+                                          bottomLeft: message.sender_id ==
+                                                  currentUser!.uid
+                                              ? Radius.circular(0)
+                                              : Radius.circular(20),
+                                          bottomRight: message.sender_id ==
+                                                  currentUser!.uid
+                                              ? Radius.circular(20)
+                                              : Radius.circular(0),
+                                        ),
+                                        color: message.sender_id ==
+                                                currentUser!.uid
+                                            ? Colors.orange.withOpacity(.5)
+                                            : Colors.white70.withOpacity(.3),
                                       ),
-                                    ],
-                                  ),
-                                ),
-                              ).paddingOnly(
-                                left: 15,
-                                right: 15,
-                              ),
-                            );
-                          },
-                        )
+                                      child: (message.message_type == "video")
+                                          ? Container(
+                                              child: GetBuilder<
+                                                  ControllerVideoPlayer>(
+                                                key:
+                                                    UniqueKey(), // Add a unique key
+                                                init: Get.put(
+                                                    ControllerVideoPlayer(
+                                                        path: message.text)),
+                                                builder: (logic) {
+                                                  return Center(
+                                                    child: logic.videoController
+                                                            .value.isInitialized
+                                                        ? AspectRatio(
+                                                            aspectRatio: logic
+                                                                .videoController
+                                                                .value
+                                                                .aspectRatio,
+                                                            child: VideoPlayer(logic
+                                                                .videoController),
+                                                          )
+                                                        : CircularProgressIndicator(),
+                                                  );
+                                                },
+                                              ),
+                                            )
+                                          : ListTile(
+                                              title: message.message_type ==
+                                                      'text'
+                                                  ? Text(message.text)
+                                                  : message.message_type ==
+                                                          "voice"
+                                                      ? IconButton(
+                                                          onPressed: () {
+                                                            chatController
+                                                                .playRecording(
+                                                                    message
+                                                                        .text);
+                                                          },
+                                                          icon: Icon(
+                                                              Icons.play_arrow))
+                                                      : GestureDetector(
+                                                          onTap: () {
+                                                            Get.to(
+                                                                ScreenImageView(
+                                                                    url: message
+                                                                        .text));
+                                                          },
+                                                          child: Image.network(
+                                                            message.text,
+                                                          ),
+                                                        ),
+                                              subtitle: Text(
+                                                  message.sender_id ==
+                                                          currentUser!.uid
+                                                      ? "You"
+                                                      : receiver.name),
+                                              trailing: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.end,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.end,
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Text(
+                                                    DateFormat("hh:mm").format(
+                                                        DateTime
+                                                            .fromMillisecondsSinceEpoch(
+                                                                message
+                                                                    .timestamp)),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                    ).paddingOnly(
+                                      left: 15,
+                                      right: 15,
+                                    ),
+                                  );
+                                },
+                              )
                             : Center(
-                          child: Text("No messages"),
-                        );
+                                child: Text("No messages"),
+                              );
                       })),
               Row(
                 children: [
@@ -184,7 +226,7 @@ class ScreenChat extends StatelessWidget {
                           IconButton(
                             onPressed: () {
                               chatController.isEmojiVisible.value =
-                              !chatController.isEmojiVisible.value;
+                                  !chatController.isEmojiVisible.value;
                               chatController.focusNode.unfocus();
                               chatController.focusNode.canRequestFocus = true;
                             },
@@ -221,8 +263,8 @@ class ScreenChat extends StatelessWidget {
                           ),
                           IconButton(
                             onPressed: () {
-                              chatController.pickVideo(ImageSource.gallery);
-                              Get.to(ScreenVideoPerview(receiver: receiver,));
+                              chatController.pickVideo(
+                                  receiver, ImageSource.gallery);
                             },
                             icon: Icon(Icons.video_library_rounded),
                             highlightColor: Colors.transparent,
@@ -235,45 +277,46 @@ class ScreenChat extends StatelessWidget {
                     ),
                   ),
                   Obx(() {
-                    return (chatController.textEditingController.text.isNotEmpty)?FloatingActionButton(
-                        highlightElevation: 0,
-                        // Set highlight elevation to 0
-                        splashColor: Colors.transparent,
-                        mini: true,
-                        onPressed: () async {
-                          String message =
-                              chatController.textEditingController.value.text;
-                          if (message.isNotEmpty) {
-                            chatController.sendMessage(
-                                chatController.textEditingController.value.text);
-                          } else {
-                            chatController.startRecording();
-                          }
-                        },
-                        child: Icon(
-                          Icons.send,
-                          size: 22,
-                        )):
-                    chatController.isRecording.value?
-                    FloatingActionButton(
-                        highlightElevation: 0,
-                        // Set highlight elevation to 0
-                        splashColor: Colors.transparent,
-                        mini: true,
-                        onPressed: () async {
-                          chatController.stopRecording();
-                        },
-                        child: Icon(Icons.stop)):
-                    FloatingActionButton(
-                        highlightElevation: 0,
-                        // Set highlight elevation to 0
-                        splashColor: Colors.transparent,
-                        mini: true,
-                        onPressed: () async {
-                          chatController.startRecording();
-
-                        },
-                        child: Icon(Icons.mic));
+                    return (chatController
+                            .textEditingController.text.isNotEmpty)
+                        ? FloatingActionButton(
+                            highlightElevation: 0,
+                            // Set highlight elevation to 0
+                            splashColor: Colors.transparent,
+                            mini: true,
+                            onPressed: () async {
+                              String message = chatController
+                                  .textEditingController.value.text;
+                              if (message.isNotEmpty) {
+                                chatController.sendMessage(chatController
+                                    .textEditingController.value.text);
+                              } else {
+                                chatController.startRecording();
+                              }
+                            },
+                            child: Icon(
+                              Icons.send,
+                              size: 22,
+                            ))
+                        : chatController.isRecording.value
+                            ? FloatingActionButton(
+                                highlightElevation: 0,
+                                // Set highlight elevation to 0
+                                splashColor: Colors.transparent,
+                                mini: true,
+                                onPressed: () async {
+                                  chatController.stopRecording();
+                                },
+                                child: Icon(Icons.stop))
+                            : FloatingActionButton(
+                                highlightElevation: 0,
+                                // Set highlight elevation to 0
+                                splashColor: Colors.transparent,
+                                mini: true,
+                                onPressed: () async {
+                                  chatController.startRecording();
+                                },
+                                child: Icon(Icons.mic));
                   }),
                 ],
               ).paddingOnly(left: 10, right: 10),
@@ -343,7 +386,7 @@ class ScreenChat extends StatelessWidget {
   String formatRelativeTime(int millisecondsSinceEpoch) {
     final now = DateTime.now();
     final timestamp =
-    DateTime.fromMillisecondsSinceEpoch(millisecondsSinceEpoch);
+        DateTime.fromMillisecondsSinceEpoch(millisecondsSinceEpoch);
     final difference = now.difference(timestamp);
 
     if (millisecondsSinceEpoch == 0) {
@@ -369,5 +412,94 @@ class ScreenChat extends StatelessWidget {
       final years = (difference.inDays / 365).floor();
       return '$years years ago';
     }
+  }
+}
+
+
+
+
+class ControllerVideoPlayer extends GetxController {
+  String path;
+  late VideoPlayerController videoController;
+
+  @override
+  void onInit() {
+    videoController = VideoPlayerController.network(path)
+      ..initialize()
+      ..play().then((_) {
+        update();
+      });
+    super.onInit();
+  }
+
+  @override
+  void dispose() {
+    videoController.dispose();
+    super.dispose();
+  }
+
+  ControllerVideoPlayer({
+    required this.path,
+  });
+}
+
+
+class MyVideoPlayer extends StatefulWidget {
+  final String videoUrl;
+
+  MyVideoPlayer({required this.videoUrl});
+
+  @override
+  _MyVideoPlayerState createState() => _MyVideoPlayerState();
+}
+
+class _MyVideoPlayerState extends State<MyVideoPlayer> {
+  late VideoPlayerController _controller;
+  bool _isPlaying = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = VideoPlayerController.network(widget.videoUrl)
+      ..initialize().then((_) {
+        setState(() {});
+      });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _controller.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _isPlaying = !_isPlaying;
+          if (_isPlaying) {
+            _controller.play();
+          } else {
+            _controller.pause();
+          }
+        });
+      },
+      child: Stack(
+        children: [
+          AspectRatio(
+            aspectRatio: _controller.value.aspectRatio,
+            child: VideoPlayer(_controller),
+          ),
+          if (!_isPlaying)
+            Center(
+              child: Icon(
+                Icons.play_arrow,
+                size: 50,
+              ),
+            ),
+        ],
+      ),
+    );
   }
 }
