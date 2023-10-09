@@ -10,6 +10,8 @@ import 'package:mondaytest/controller/chat_controller.dart';
 import 'package:mondaytest/helper/constants.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:video_player/video_player.dart';
+import 'package:wave/config.dart' as wave;
+import 'package:wave/wave.dart';
 
 import '../../Models/Student.dart';
 
@@ -100,7 +102,7 @@ class ScreenChat extends StatelessWidget {
                                           right: 5),
                                       margin: EdgeInsets.only(bottom: 10),
                                       width: Device.width * .67,
-                                      height: message.message_type == "video"
+                                      height: message.message_type == 'video'
                                           ? Get.height * .2
                                           : null,
                                       decoration: BoxDecoration(
@@ -131,11 +133,10 @@ class ScreenChat extends StatelessWidget {
                                           ? Container(
                                               child: GetBuilder<
                                                   ControllerVideoPlayer>(
-                                                key:
-                                                    UniqueKey(), // Add a unique key
                                                 init: Get.put(
                                                     ControllerVideoPlayer(
-                                                        path: message.text)),
+                                                        path: message.text
+                                                        )),
                                                 builder: (logic) {
                                                   return Center(
                                                     child: logic.videoController
@@ -157,17 +158,17 @@ class ScreenChat extends StatelessWidget {
                                               title: message.message_type ==
                                                       'text'
                                                   ? Text(message.text)
-                                                  : message.message_type ==
-                                                          "voice"
-                                                      ? IconButton(
-                                                          onPressed: () {
-                                                            chatController
-                                                                .playRecording(
-                                                                    message
-                                                                        .text);
-                                                          },
-                                                          icon: Icon(
-                                                              Icons.play_arrow))
+                                                  :message.message_type ==
+                                                  "voice"
+                                                  ? IconButton(
+                                                  onPressed: () {
+                                                    chatController
+                                                        .playRecording(
+                                                        message
+                                                            .text);
+                                                  },
+                                                  icon: Icon(
+                                                      Icons.play_arrow))
                                                       : GestureDetector(
                                                           onTap: () {
                                                             Get.to(
@@ -424,7 +425,7 @@ class ControllerVideoPlayer extends GetxController {
 
   @override
   void onInit() {
-    videoController = VideoPlayerController.network(path)
+    videoController = VideoPlayerController.networkUrl(Uri.file(path))
       ..initialize()
       ..play().then((_) {
         update();

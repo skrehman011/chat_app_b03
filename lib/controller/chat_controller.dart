@@ -214,4 +214,5 @@ class ChatController extends GetxController {
       print('error in play recording, $e');
     }
   }
+
 }

@@ -59,6 +59,7 @@ dependencies:
   audioplayers: ^5.1.0
   audio_waveforms: ^1.0.4
   video_player: ^2.7.2
+  wave: ^0.2.2
 
 dev_dependencies:
   flutter_test:
