@@ -1,9 +1,13 @@
 import 'dart:io';
 
+import 'package:blurhash_dart/blurhash_dart.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image/image.dart' as img;
 import 'package:mondaytest/controller/chat_controller.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 
 import '../../Models/Student.dart';
 import '../../helper/constants.dart';
@@ -31,8 +35,7 @@ class _ScreenVideoPerviewState extends State<ScreenVideoPerview> {
 
     // Initialize the VideoPlayerController with the video file path
     _controller = VideoPlayerController.file(File(widget.path))
-      ..initialize()
-      ..play().then((_) {
+      ..initialize().then((_) {
         // Ensure the first frame is shown and update the state
         if (mounted) {
           setState(() {});
@@ -54,121 +57,124 @@ class _ScreenVideoPerviewState extends State<ScreenVideoPerview> {
     ));
 
     return Scaffold(
-      body: Stack(children: [
-        Container(
-          width: Get.width,
-          color: Colors.black,
-          height: Get.height * 5,
-          padding: EdgeInsets.only(top: 20, bottom: 10),
-          child: Stack(
-            children: [
-              Center(
-                child: _controller.value.isInitialized
-                    ? AspectRatio(
-                        aspectRatio: _controller.value.aspectRatio,
-                        child: VideoPlayer(_controller),
-                      )
-                    : CircularProgressIndicator(), // Show loading indicator while initializing
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.symmetric(horizontal: 5),
-                leading: Container(
-                  height: 45,
-                  width: 45,
-                  decoration: BoxDecoration(
-                      color: Colors.black54, shape: BoxShape.circle),
-                  child: Icon(
-                    Icons.add,
-                    color: Colors.white,
-                  ),
-                ),
-                trailing: Container(
-                  width: Get.width * 0.67,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(
-                        height: 45,
-                        width: 45,
-                        decoration: BoxDecoration(
-                            color: Colors.black54, shape: BoxShape.circle),
-                        child: Icon(
-                          Icons.arrow_back,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Container(
-                        height: 45,
-                        width: 45,
-                        decoration: BoxDecoration(
-                            color: Colors.black54, shape: BoxShape.circle),
-                        child: Icon(
-                          Icons.hd,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Container(
-                        height: 45,
-                        width: 45,
-                        decoration: BoxDecoration(
-                            color: Colors.black54, shape: BoxShape.circle),
-                        child: Icon(
-                          Icons.sticky_note_2_rounded,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Container(
-                        height: 45,
-                        width: 45,
-                        decoration: BoxDecoration(
-                            color: Colors.black54, shape: BoxShape.circle),
-                        child: Icon(
-                          Icons.text_fields_sharp,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Container(
-                        height: 45,
-                        width: 45,
-                        decoration: BoxDecoration(
-                            color: Colors.black54, shape: BoxShape.circle),
-                        child: Icon(
-                          Icons.edit,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
+      // resizeToAvoidBottomInset: false,
+      body: Stack(
+        children: [
+          Positioned.fill(
+              child: Center(
+            child: _controller.value.isInitialized
+                ? AspectRatio(
+                    aspectRatio: _controller.value.aspectRatio,
+                    child: VideoPlayer(_controller),
+                  )
+                : CircularProgressIndicator(), // Show loading indicator while initializing
+          )),
+          Positioned(
+            top: 10,
+            left: 0,
+            right: 0,
+            child: ListTile(
+              contentPadding: EdgeInsets.symmetric(horizontal: 5),
+              leading: Container(
+                height: 45,
+                width: 45,
+                decoration: BoxDecoration(
+                    color: Colors.black54, shape: BoxShape.circle),
+                child: Icon(
+                  Icons.add,
+                  color: Colors.white,
                 ),
               ),
-              Center(
-                child: GestureDetector(
-                  onTap: (){
-                    setState(() {
-                      _controller.value.isPlaying
-                          ? _controller.pause()
-                          : _controller.play();
-                    });
-                  },
-                  child: Container(
-                    height: 65,
-                    width: 65,
-                    decoration: BoxDecoration(
-                        color: Colors.black54, shape: BoxShape.circle),
-                    child: Icon(
-                      _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
-                      color: Colors.white,
-                      size: 55,
+              trailing: Container(
+                width: Get.width * 0.67,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      height: 45,
+                      width: 45,
+                      decoration: BoxDecoration(
+                          color: Colors.black54, shape: BoxShape.circle),
+                      child: Icon(
+                        Icons.arrow_back,
+                        color: Colors.white,
+                      ),
                     ),
-                  ),
+                    Container(
+                      height: 45,
+                      width: 45,
+                      decoration: BoxDecoration(
+                          color: Colors.black54, shape: BoxShape.circle),
+                      child: Icon(
+                        Icons.hd,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Container(
+                      height: 45,
+                      width: 45,
+                      decoration: BoxDecoration(
+                          color: Colors.black54, shape: BoxShape.circle),
+                      child: Icon(
+                        Icons.sticky_note_2_rounded,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Container(
+                      height: 45,
+                      width: 45,
+                      decoration: BoxDecoration(
+                          color: Colors.black54, shape: BoxShape.circle),
+                      child: Icon(
+                        Icons.text_fields_sharp,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Container(
+                      height: 45,
+                      width: 45,
+                      decoration: BoxDecoration(
+                          color: Colors.black54, shape: BoxShape.circle),
+                      child: Icon(
+                        Icons.edit,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              Positioned(
-                bottom: 65,
-                left: 10,
-                right: 10,
-                child: Container(
+            ),
+          ),
+          Center(
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  _controller.value.isPlaying
+                      ? _controller.pause()
+                      : _controller.play();
+                });
+              },
+              child: Container(
+                height: 65,
+                width: 65,
+                decoration: BoxDecoration(
+                    color: Colors.black54, shape: BoxShape.circle),
+                child: Icon(
+                  _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
+                  color: Colors.white,
+                  size: 55,
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 5,
+            left: 10,
+            right: 10,
+            child: Column(
+              children: [
+                Container(
                   padding: EdgeInsets.symmetric(
                     horizontal: 5,
                   ),
@@ -239,73 +245,69 @@ class _ScreenVideoPerviewState extends State<ScreenVideoPerview> {
                     ],
                   ),
                 ),
-              ),
-            ],
-          ),
-        ),
-        Positioned(
-            right: 16,
-            bottom: 10,
-            left: 10,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                    padding: EdgeInsets.all(5),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(5),
-                      color: Colors.blueGrey,
-                    ),
-                    child: Text(
-                      widget.receiver!.name,
-                      style: TextStyle(color: Colors.white, fontSize: 16),
-                    )),
-                FloatingActionButton(
-                  onPressed: () async {
-                    var url = await FirebaseStorageUtils.uploadImage(
-                        File(widget.path!),
-                        'video/${chatController.getRoomId(widget.receiver!.id, currentUser!.uid)}',
-                        DateTime.now().millisecondsSinceEpoch.toString());
-                    chatController.sendMessage(url, type: "video");
-                    Get.back();
-                  },
-                  backgroundColor: Color(0xFF075e55),
-                  child: Icon(
-                    Icons.send,
-                  ),
+                SizedBox(
+                  height: 10,
                 ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                        padding: EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(5),
+                          color: Colors.blueGrey,
+                        ),
+                        child: Text(
+                          widget.receiver!.name,
+                          style: TextStyle(color: Colors.white, fontSize: 16),
+                        )),
+                    FloatingActionButton(
+                      onPressed: () async {
+                        var thumbnail = await getVideoThumbnail(widget.path);
+                        var hash = getBlurHash(thumbnail);
+
+                        var url = await FirebaseStorageUtils.uploadImage(
+                            File(widget.path),
+                            'video/${chatController.getRoomId(widget.receiver!.id, currentUser!.uid)}',
+                            DateTime.now().millisecondsSinceEpoch.toString());
+                        chatController.sendMessage(url,
+                            type: "video", blurhash: hash);
+                        Get.back();
+                      },
+                      backgroundColor: Color(0xFF075e55),
+                      child: Icon(
+                        Icons.send,
+                      ),
+                    ),
+                  ],
+                )
               ],
-            )),
-      ]),
+            ),
+          ),
+        ],
+      ),
     );
   }
-}
 
-class ControllerVideoPlayer extends GetxController {
-  String path;
-  late VideoPlayerController videoController;
-
-
-  @override
-  void onInit() {
-    videoController = VideoPlayerController.network(path)
-      ..initialize()
-      ..play().then((_) {
-        // Ensure the first frame is shown and update the state
-        update();
-      });
-    super.onInit();
+  String getBlurHash(File file) {
+    final data = file.readAsBytesSync();
+    final image = img.decodeImage(data);
+    final blurHash = BlurHash.encode(image!, numCompX: 4, numCompY: 3);
+    print(blurHash.hash);
+    return blurHash.hash;
   }
 
-  @override
-  void dispose() {
-    videoController.dispose();
-    super.dispose();
+  Future<File> getVideoThumbnail(String url) async {
+    var thumbTempPath = await VideoThumbnail.thumbnailFile(
+      video: url,
+      thumbnailPath: (await getTemporaryDirectory()).path,
+      imageFormat: ImageFormat.WEBP,
+      maxHeight: 64,
+      // specify the height of the thumbnail, let the width auto-scaled to keep the source aspect ratio
+      quality: 75, // you can change the thumbnail quality here
+    );
+    return File(thumbTempPath!);
   }
-
-  ControllerVideoPlayer({
-    required this.path,
-  });
 }
 
 class MyVideoPlayer extends StatefulWidget {

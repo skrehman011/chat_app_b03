@@ -10,6 +10,7 @@ import 'package:mondaytest/Models/group_info.dart';
 import 'package:mondaytest/Views/screens/screen_group_chat.dart';
 import 'package:mondaytest/Views/screens/screen_home.dart';
 import 'package:mondaytest/Views/screens/screen_log_in.dart';
+import 'package:mondaytest/controller/dependancy_injection.dart';
 import 'package:mondaytest/controller/home_controller.dart';
 import 'package:mondaytest/helper/constants.dart';
 import 'package:mondaytest/homepagestf.dart';
@@ -26,6 +27,7 @@ Future<void> main() async {
   );
 
   runApp(MyApp());
+  DependencyInjection.init();
 }
 
 class MyApp extends StatefulWidget {

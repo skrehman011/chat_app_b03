@@ -69,7 +69,7 @@ class ChatController extends GetxController {
     });
   }
 
-  void sendMessage(String text, {String type = 'text'}) async {
+  void sendMessage(String text, {String type = 'text', String? blurhash}) async {
     if (text.isNotEmpty) {
       FCM.sendMessageSingle(
         currentUser!.displayName ?? "New Message",
@@ -86,7 +86,8 @@ class ChatController extends GetxController {
           sender_id: currentUser!.uid,
           timestamp: timestamp,
           receiver_id: receiver_id,
-          message_type: type
+          message_type: type,
+        blurHash: blurhash
       );
 
       var roomPath = chatsRef.child(getRoomId(receiver_id, currentUser!.uid));

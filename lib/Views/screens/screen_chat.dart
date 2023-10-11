@@ -1,17 +1,17 @@
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:mondaytest/Models/message_model.dart';
 import 'package:mondaytest/Views/screens/screen_image_view.dart';
+import 'package:mondaytest/Views/screens/screen_video_viewer.dart';
 import 'package:mondaytest/controller/chat_controller.dart';
 import 'package:mondaytest/helper/constants.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:video_player/video_player.dart';
-import 'package:wave/config.dart' as wave;
-import 'package:wave/wave.dart';
 
 import '../../Models/Student.dart';
 
@@ -130,45 +130,22 @@ class ScreenChat extends StatelessWidget {
                                             : Colors.white70.withOpacity(.3),
                                       ),
                                       child: (message.message_type == "video")
-                                          ? Container(
-                                              child: GetBuilder<
-                                                  ControllerVideoPlayer>(
-                                                init: Get.put(
-                                                    ControllerVideoPlayer(
-                                                        path: message.text
-                                                        )),
-                                                builder: (logic) {
-                                                  return Center(
-                                                    child: logic.videoController
-                                                            .value.isInitialized
-                                                        ? AspectRatio(
-                                                            aspectRatio: logic
-                                                                .videoController
-                                                                .value
-                                                                .aspectRatio,
-                                                            child: VideoPlayer(logic
-                                                                .videoController),
-                                                          )
-                                                        : CircularProgressIndicator(),
-                                                  );
-                                                },
-                                              ),
-                                            )
+                                          ? VideoItem(message: message)
                                           : ListTile(
                                               title: message.message_type ==
                                                       'text'
                                                   ? Text(message.text)
-                                                  :message.message_type ==
-                                                  "voice"
-                                                  ? IconButton(
-                                                  onPressed: () {
-                                                    chatController
-                                                        .playRecording(
-                                                        message
-                                                            .text);
-                                                  },
-                                                  icon: Icon(
-                                                      Icons.play_arrow))
+                                                  : message.message_type ==
+                                                          "voice"
+                                                      ? IconButton(
+                                                          onPressed: () {
+                                                            chatController
+                                                                .playRecording(
+                                                                    message
+                                                                        .text);
+                                                          },
+                                                          icon: Icon(
+                                                              Icons.play_arrow))
                                                       : GestureDetector(
                                                           onTap: () {
                                                             Get.to(
@@ -416,34 +393,59 @@ class ScreenChat extends StatelessWidget {
   }
 }
 
+class VideoItem extends StatelessWidget {
+  const VideoItem({
+    super.key,
+    required this.message,
+  });
 
+  final MessageModel message;
 
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+        onTap: () {
+          Get.to(ScreenVideoViewer(message: message));
+        },
+        child:
+            BlurHash(hash: message.blurHash ?? "L5H2EC=PM+yV0g-mq.wG9c010J}I"));
+  }
+}
 
 class ControllerVideoPlayer extends GetxController {
   String path;
-  late VideoPlayerController videoController;
+  Rx<VideoPlayerController?> videoController = Rx(null);
 
   @override
-  void onInit() {
-    videoController = VideoPlayerController.networkUrl(Uri.file(path))
-      ..initialize()
-      ..play().then((_) {
-        update();
-      });
+  void onInit() async {
+    videoController.value = await VideoPlayerController.networkUrl(Uri.parse(path));
+    videoController.value?..initialize();
     super.onInit();
   }
 
   @override
   void dispose() {
-    videoController.dispose();
+    videoController.value?.dispose();
     super.dispose();
+  }
+
+  void playOrPause() async {
+    if (videoController.value == null) {
+      return;
+    }
+
+    var playing = videoController.value!.value.isPlaying;
+    if (playing) {
+      videoController.value?.pause();
+    } else {
+      videoController.value?.play();
+    }
   }
 
   ControllerVideoPlayer({
     required this.path,
   });
 }
-
 
 class MyVideoPlayer extends StatefulWidget {
   final String videoUrl;
